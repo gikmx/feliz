@@ -1,0 +1,17 @@
+{
+  "name": "rx-hapi",
+  "version": "0.0.2",
+  "description": "An hapi-based server using Reactive Extensions",
+  "main": "index.js",
+  "author": "Héctor Menéndez <etor.mx@gmail.com>",
+  "keywords": [],
+  "license": "ISC",
+  "scripts": {
+    "start":"./node_modules/.bin/nodemon"
+  },
+  "devDependencies": {
+    "nodemon":"^1.9.2"
+  },
+  "dependencies":{
+  }
+}
