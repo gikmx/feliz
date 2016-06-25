@@ -7,11 +7,12 @@
   "keywords": [],
   "license": "ISC",
   "scripts": {
-    "start":"./node_modules/.bin/nodemon"
+    "start": "./node_modules/.bin/nodemon"
   },
   "devDependencies": {
-    "nodemon":"^1.9.2"
+    "nodemon": "^1.9.2"
   },
-  "dependencies":{
+  "dependencies": {
+    "rxjs": "^5.0.0-beta.9"
   }
 }
