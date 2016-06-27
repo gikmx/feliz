@@ -5,7 +5,7 @@ const PATH = require('path');
 
 const Rx = require('rxjs/Rx');
 
-const Setup = require('./setup');
+const Server = require('./server');
 const Config = require('./config.json');
 
 // Folders where the modules reside
@@ -71,8 +71,10 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
             });
             if (item.data.root[0] !== PATH.sep)
                 item.data.root = PATH.resolve(item.data.root);
-            // make sure plugins is always populated
+            // Set optional data
             if (!fai.util.is(item.data.plugins).array()) item.data.plugins = [];
+            if (!fai.util.is(item.data.config).object()) item.data.config  = {};
+            if (!fai.util.is(item.data.connection).object()) item.data.connection  = {};
             // async validations
             const root_opt$ = Rx.Observable
                 .of(item.data.root)
@@ -89,7 +91,7 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
                 .of(item.data.plugins)
                 .mergeAll()
                 .map(plugin => {
-                    if (!fai.util.is(plugin.options).object()) plugin.options = {};
+                    if (!fai.util.is(plugin.config).object()) plugin.config = {};
                     if (!fai.util.is(plugin.connection).object()) plugin.connection = {};
                     if (!fai.util.is(plugin.register).function()) throw fai.error.type({
                         name: 'plugin.register',
@@ -111,20 +113,19 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
             return instance;
         }, {})
         // we no longer need the temporary instance, get rid of it.
-        .do(() => { fai = undefined });
-
-    function onReady(type, instance){
-        // Handle errors or completions
-        if (type != 'ready') return this[type](instance);
-        const result = Setup(instance);
-        if (result) instance = result;;
-        this.next(instance);
-    }
+        .do(() => { fai = undefined })
+        // instantiate the server (start the server)
+        .mergeMap(instance => {
+            const server$ = Server(instance);
+            if (!server$) return Rx.Observable.of(instance);
+            // TODO: Validate that server$ is actually an Observable
+            return server$;
+        });
 
     instance$.subscribe(
-        onReady.bind(observer, 'ready'),
-        onReady.bind(observer, 'error'),
-        onReady.bind(observer, 'complete')
+        instance => observer.next(instance),
+        error    => observer.error(error),
+        ()       => observer.complete()
     );
 });
 
