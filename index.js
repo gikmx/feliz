@@ -61,15 +61,18 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
             if (!fai.util.is(item.data).object()) throw fai.error.type({
                 name: 'options',
                 type: 'Object',
-                data: item.data
+                data: !item.data? item.data : item.data.constructor.name
             });
             if (!fai.util.is(item.data.root).string()) throw fai.error.type({
                 name: 'options.root',
                 type: 'String',
-                data: item.data.root
+                data: !item.data.root?
+                    item.data.root : item.dara.root.construcor.name
             });
             if (item.data.root[0] !== PATH.sep)
                 item.data.root = PATH.resolve(item.data.root);
+            // make sure plugins is always populated
+            if (!fai.util.is(item.data.plugins).array()) item.data.plugins = [];
             // async validations
             const root_opt$ = Rx.Observable
                 .of(item.data.root)
@@ -78,10 +81,30 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
                     throw fai.error.type({
                         name: 'options.root',
                         type: 'existent path',
-                        data: item.data.root
+                        data: !item.data.root?
+                            item.data.root : item.data.root.construcor.name
                     });
                 });
-            return root_opt$.mapTo(item);
+            const plugins_opt$ = Rx.Observable
+                .of(item.data.plugins)
+                .mergeAll()
+                .map(plugin => {
+                    if (!fai.util.is(plugin.options).object()) plugin.options = {};
+                    if (!fai.util.is(plugin.connection).object()) plugin.connection = {};
+                    if (!fai.util.is(plugin.register).function()) throw fai.error.type({
+                        name: 'plugin.register',
+                        type: 'Function',
+                        data: !plugin.register?
+                            plugin.register : plugin.register.constructor.name
+                    })
+                    return plugin;
+                })
+                .toArray()
+                .do(plugins => item.data.plugins = plugins);
+            // merge all async operators, but always return the (modified) item
+            return Rx.Observable
+                .concat(root_opt$, plugins_opt$)
+                .mapTo(item);
         })
         .reduce((instance, item) => {
             instance[item.name] = item.data;
