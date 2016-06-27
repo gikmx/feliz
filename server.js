@@ -1,7 +1,9 @@
 'use strict';
 
-const Rx   = require('rxjs/Rx');
-const Hapi = require('hapi');
+const Rx       = require('rxjs/Rx');
+const Hapi     = require('hapi');
+const Socket   = require('socket.io');
+const SocketWc = require('socketio-wildcard');
 
 module.exports = instance => Rx.Observable.create(observer => {
 
@@ -38,6 +40,10 @@ module.exports = instance => Rx.Observable.create(observer => {
     instance.server.connection(instance.options.connection);
 
     plugins.map(plugin => instance.server.register(plugin))
+
+    // Enable socket.io integration (in the same port)
+    instance.socket = Socket(instance.server.listener);
+    instance.socket.use(SocketWc());
 
     instance.server.start(err => {
         if (err) return observer.error(err);
