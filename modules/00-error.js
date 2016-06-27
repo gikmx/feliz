@@ -1,5 +1,7 @@
 'use strict';
 
+const Rx = require('rxjs/Rx');
+
 const ERRORS = [Error, TypeError, RangeError, ReferenceError, SyntaxError];
 
 function Exception(template, options){
@@ -11,18 +13,19 @@ function Exception(template, options){
     return new Instance(template);
 }
 
-module.exports = function(){
-    return [
+module.exports = instance => Rx.Observable
+    .of([
         [null        , Error          , '%message']                                    ,
         ['type'      , TypeError      , 'Invalid %name. expecting %type; got: %data' ] ,
         ['range'     , RangeError     , 'TODO: Add an error message here' ]            ,
         ['reference' , ReferenceError , 'TODO: Add an error message here' ]            ,
         ['syntax'    , SyntaxError    , 'TODO: Add an error message here' ]
-    ].reduce((acc, cur) => {
+    ])
+    .mergeAll()
+    .reduce((acc, cur) => {
         let type = cur.shift();
         let bind = Exception.bind.apply(Exception, cur);
         if (type) acc[type] = bind;
         else acc = bind;
         return acc;
     }, null);
-}
