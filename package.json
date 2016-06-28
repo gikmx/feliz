@@ -1,5 +1,5 @@
 {
-  "name": "rx-hapi",
+  "name": "hapi-rx",
   "version": "0.0.3",
   "description": "A minimalistic wrapper for hapi.js using reactive extensions.",
   "main": "index.js",
