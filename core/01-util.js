@@ -23,7 +23,7 @@ module.exports = instance => {
     });
 
     util.rx = {};
-    util.rx.path = target => Rx.Observable.create(observer => {
+    util.rx.path = target => {
         if (!util.is(target).string()) {
             let err = instance.error.type({
                 name: 'util.rx.path',
@@ -31,23 +31,27 @@ module.exports = instance => {
                 data: !target? target : target.constructor.name
             });
             err.rxType = 'path';
-            return observer.error(err);
+            throw err;
         }
+        target = PATH.isAbsolute(target)? target : PATH.resolve(target);
         const path = {};
         path.stats = Rx.Observable
             .bindNodeCallback(FS.stat)(target)
-            .catch(err => { throw Object.assign({rxType:'path.stats', err}); });
+            .catch(err => { throw Object.assign({rxType:'path.stats', err}); })
         path.isReadable = Rx.Observable
             .bindNodeCallback(FS.access)(target, FS.R_OK)
-            .catch(err => { throw Object.assign({rxType:'path.isReadable'}, err); });
+            .catch(err => { throw Object.assign({rxType:'path.isReadable'}, err); })
+            .mapTo(target)
         path.isDir = Rx.Observable
             .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isDirectory())
-            .catch(err => { throw Object.assign({rxType:'path.isDir'}, err); });
+            .catch(err => { throw Object.assign({rxType:'path.isDir'}, err); })
+            .mapTo(target)
         path.isFile = Rx.Observable
             .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isFile())
-            .catch(err => { throw Object.assign({rxType:'path.isFile'}, err); });
+            .catch(err => { throw Object.assign({rxType:'path.isFile'}, err); })
+            .mapTo(target)
         return path;
-    });
+    };
 
 
     util.object = target => {
