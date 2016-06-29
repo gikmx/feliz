@@ -6,7 +6,6 @@ const PATH = require('path');
 const Rx = require('rxjs/Rx');
 
 const Server = require('./server');
-const Config = require('./config.json');
 
 // Folders where the modules reside
 const PATH_CORE = PATH.join(__dirname, 'core');
