@@ -1,5 +1,8 @@
 'use strict';
 
+const PATH = require('path');
+const FS   = require('fs');
+
 const Rx    = require('rxjs/Rx');
 const Merge = require('lodash.merge');
 
@@ -18,6 +21,34 @@ module.exports = instance => {
         null      : ()=> target === null,
         undefined : ()=> target === undefined
     });
+
+    util.rx = {};
+    util.rx.path = target => Rx.Observable.create(observer => {
+        if (!util.is(target).string()) {
+            let err = instance.error.type({
+                name: 'util.rx.path',
+                type: 'String',
+                data: !target? target : target.constructor.name
+            });
+            err.rxType = 'path';
+            return observer.error(err);
+        }
+        const path = {};
+        path.stats = Rx.Observable
+            .bindNodeCallback(FS.stat)(target)
+            .catch(err => { throw Object.assign({rxType:'path.stats', err}); });
+        path.isReadable = Rx.Observable
+            .bindNodeCallback(FS.access)(target, FS.R_OK)
+            .catch(err => { throw Object.assign({rxType:'path.isReadable'}, err); });
+        path.isDir = Rx.Observable
+            .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isDirectory())
+            .catch(err => { throw Object.assign({rxType:'path.isDir'}, err); });
+        path.isFile = Rx.Observable
+            .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isFile())
+            .catch(err => { throw Object.assign({rxType:'path.isFile'}, err); });
+        return path;
+    });
+
 
     util.object = target => {
         if (!util.is(target).object()) throw instance.error.type({
