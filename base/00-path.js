@@ -8,21 +8,30 @@ const Rx   = require('rxjs/Rx');
 const rxAccess = Rx.Observable.bindNodeCallback(FS.access);
 const rxMkDir  = Rx.Observable.bindNodeCallback(FS.mkdir);
 
-module.exports = instance => {
-    // these variables will be available for replacement
+const OPTIONS = {
+    "ext"         : { "type" : "extname" , "args" : ["${__filename}"] },
+    "app.root"    : { "type" : "join"    , "args" : ["${root}"]  },
+    "app.bundles" : { "type" : "join"    , "args" : ["${root}", "bundles"] }
+};
+
+module.exports = instance => Rx.Observable.create(observer => {
+
+    // Populate paths
+    if (instance.util.is(instance.options.path).object())
+        instance.options.path = instance.util
+            .object(OPTIONS)
+            .merge(instance.options.path)
+    else instance.options.path = OPTIONS;
+
+    // The variables available for path replacement
     const context = Object.assign({
         __filename,
         __dirname,
         __env: process.env
     }, instance.options);
 
-    return Rx.Observable
-        .of({
-            "ext"         : { "type" : "extname" , "args" : ["${__filename}"] },
-            "app.root"    : { "type" : "join"    , "args" : ["${root}"]  },
-            "app.bundles" : { "type" : "join"    , "args" : ["${root}", "bundles"] },
-            "app.static"  : { "type" : "join"    , "args" : ["${root}", "static"]  }
-        })
+    const path$ = Rx.Observable
+        .of(instance.options.path)
         .mergeMap(paths => Object
             .keys(paths)
             .map(name => Object.assign({name}, paths[name]))
@@ -49,4 +58,10 @@ module.exports = instance => {
                 }, {})
             );
         }, {});
-}
+
+    path$.subscribe(
+        path => observer.next(path),
+        err  => observer.error(err),
+        ()   => observer.complete()
+    );
+});
