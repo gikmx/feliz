@@ -16,39 +16,13 @@ const METHODS = [
 
 module.exports = instance => Rx.Observable.create(observer => {
 
-    // get configurations and connections from plugins
-    const plugins = instance.options.plugins
-        .map(plugin => {
-            instance.options.config = instance.util
-                .object(instance.options.config)
-                .merge(plugin.config);
-            instance.options.connection = instance.util
-                .object(instance.options.connection)
-                .merge(plugin.connection);
-            return plugin.register;
-        });
-
     // Set configuration and connection defaults
-    instance.options.config = instance.util
-        .object({
-            connections: {
-                routes: {
-                    files: { relativeTo: instance.options.root }
-                }
-            }
-        })
-        .merge(instance.options.config);
     instance.options.connection = instance.util
-        .object({
-            port: process.env.PORT || 8000
-        })
+        .object({ port: process.env.PORT || 8000 })
         .merge(instance.options.connection);
-
 
     instance.server = new Hapi.Server(instance.options.config);
     instance.server.connection(instance.options.connection);
-
-    plugins.map(plugin => instance.server.register(plugin))
 
     // Enable socket.io integration (in the same port)
     instance.socket = Socket(instance.server.listener);
@@ -67,6 +41,23 @@ module.exports = instance => Rx.Observable.create(observer => {
             if (route) route.bundle.func.call(instance, type.predicate, data);
         });
     })
+
+    // Register declared plugins
+    const rxRegisterPlugin = plugin => Rx.Observable.create(obs => {
+        instance.server.register(plugin.data, err => {
+            if (err) return obs.error(err);
+            instance.events.emit(`emit:${plugin.name}`, instance);
+            obs.next(plugin);
+            obs.complete();
+        });
+    });
+
+    Rx.Observable.bindNodeCallback(instance.server.register);
+    const plugins$ = Rx.Observable
+        .from(instance.options.plugins)
+        .filter(plugin => plugin.data)
+        .mergeMap(plugin => rxRegisterPlugin(plugin))
+        .toArray()
 
     // Enable routes
     const routes$ = Rx.Observable
@@ -132,7 +123,12 @@ module.exports = instance => Rx.Observable.create(observer => {
 
     const server$ = Rx.Observable
         // register routes
-        .combineLatest(http_routes$, socket_routes$, (http, socket) => ({http, socket}))
+        .combineLatest(
+            plugins$,
+            http_routes$,
+            socket_routes$,
+            (plugins, http, socket) => ({http, socket})
+        )
         // Start server
         .switchMap(routes => Rx.Observable.create(obs => {
             instance.routes = routes;

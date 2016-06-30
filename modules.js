@@ -25,6 +25,7 @@ module.exports = {
         .mergeMap(filenames => filenames.sort())
         // remove digits from filename and require the file
         .map(filename => ({
+            type:'module',
             name: PATH
                 .basename(filename, PATH.extname(filename))
                 .replace(/^\d+\-/,''),
@@ -33,7 +34,7 @@ module.exports = {
 
     rxResolve: (instance, item) => Rx.Observable.create(observer => {
         item.data(instance, item.name).subscribe(
-            data => observer.next({ data, name:item.name }),
+            data => observer.next({ data, name:item.name, type:item.type}),
             err  => observer.error(err),
             ()   => observer.complete()
         );
