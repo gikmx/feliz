@@ -32,6 +32,7 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
 
     const instance$ = module$
         .toArray()
+        .do(()=> self.events.emit('modules', self))
         .switchMap(modules => Server(self))
 
     instance$.subscribe(

@@ -21,13 +21,14 @@ module.exports = instance => Rx.Observable.create(observer => {
         .object({ port: process.env.PORT || 8000 })
         .merge(instance.options.connection);
 
-    instance.server = new Hapi.Server(instance.options.config);
+    instance.server = new Hapi.Server(instance.options.server);
     instance.server.connection(instance.options.connection);
 
     // Enable socket.io integration (in the same port)
     instance.socket = Socket(instance.server.listener);
     instance.socket.use(SocketWc());
     instance.socket.on('connection',function(){
+        instance.events.emit('socket', instance);
         instance.socket.on('*', function(event){
             let data  = e.data[1];
             let types = e.data[0].split(':');
@@ -46,7 +47,7 @@ module.exports = instance => Rx.Observable.create(observer => {
     const rxRegisterPlugin = plugin => Rx.Observable.create(obs => {
         instance.server.register(plugin.data, err => {
             if (err) return obs.error(err);
-            instance.events.emit(`emit:${plugin.name}`, instance);
+            instance.events.emit(`plugin:${plugin.name}`, instance);
             obs.next(plugin);
             obs.complete();
         });
@@ -107,7 +108,8 @@ module.exports = instance => Rx.Observable.create(observer => {
             instance.server.route(route);
             return route;
         })
-        .toArray();
+        .toArray()
+        .do(() => instance.events.emit('routes:http', instance));
 
     // Manage socket routes
     const socket_routes$ = routes$
@@ -120,6 +122,7 @@ module.exports = instance => Rx.Observable.create(observer => {
             return route;
         })
         .toArray()
+        .do(() => instance.events.emit('routes:socket', instance));
 
     const server$ = Rx.Observable
         // register routes
@@ -129,6 +132,7 @@ module.exports = instance => Rx.Observable.create(observer => {
             socket_routes$,
             (plugins, http, socket) => ({http, socket})
         )
+        .do(() => instance.events.emit('routes', instance))
         // Start server
         .switchMap(routes => Rx.Observable.create(obs => {
             instance.routes = routes;
