@@ -42,3 +42,4 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
     );
 });
 
+module.exports.Rx = Rx;
