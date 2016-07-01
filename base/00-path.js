@@ -16,6 +16,15 @@ const OPTIONS = {
 
 module.exports = instance => Rx.Observable.create(observer => {
 
+    // The variables available for path replacement
+    const getContext = options => instance.util
+        .object({
+            __filename,
+            __dirname,
+            root : instance.options.root
+        })
+        .merge(options);
+
     // Populate paths
     if (instance.util.is(instance.options.path).object())
         instance.options.path = instance.util
@@ -23,26 +32,24 @@ module.exports = instance => Rx.Observable.create(observer => {
             .merge(instance.options.path)
     else instance.options.path = OPTIONS;
 
-    // The variables available for path replacement
-    const context = Object.assign({
-        __filename,
-        __dirname,
-        __env: process.env
-    }, instance.options);
-
     const path$ = Rx.Observable
         .of(instance.options.path)
+        // convert the key to a 'name' property
         .mergeMap(paths => Object
             .keys(paths)
             .map(name => Object.assign({name}, paths[name]))
         )
-        .map(path => {
-            path.args = path.args
-                .map(arg => instance.util.string(arg).toTemplate(context));
-            return path;
-        })
         .reduce((result, item) => {
+            // update the context used for templates
+            const context = getContext(result);
+            // Resolve (pseudo)template strings sent
+            item.args = item.args.map(arg => instance.util
+                .string(arg)
+                .toTemplate(context)
+            )
+            // construct the value with the data sent
             const path = PATH[item.type].apply(PATH, item.args);
+            // resolve the key name into a proper object
             return instance.util.object(result).merge(item.name
                 .split('.')
                 .reduce((acc, cur, i, arr) => {
@@ -57,7 +64,11 @@ module.exports = instance => Rx.Observable.create(observer => {
                     return acc;
                 }, {})
             );
-        }, {});
+        }, {})
+        .do(path => {
+            console.log(path);
+            process.exit(0);
+        })
 
     path$.subscribe(
         path => observer.next(path),
