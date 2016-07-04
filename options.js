@@ -25,7 +25,10 @@ const rxPlugins = (instance, plugins) => Rx.Observable
                 .keys(events)
                 .map(name => ({name, data:events[name]}))
             )
-            .map(event => instance.events.on(event.name, event.data.bind(instance)))
+            .map(event => instance.events.on(event.name, function(self){
+                console.log('event»', event.name)
+                event.data.call(self, self);
+            }))
             .toArray()
             .do(() => delete plugin.when)
             .mapTo(plugin)

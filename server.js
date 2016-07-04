@@ -14,7 +14,7 @@ const METHODS = [
     { type: 'socket' , name:'SOCKET'   }
 ];
 
-module.exports = instance => Rx.Observable.create(observer => {
+module.exports = function(instance){
 
     // Set configuration and connection defaults
     instance.options.connection = instance.util
@@ -45,6 +45,7 @@ module.exports = instance => Rx.Observable.create(observer => {
 
     // Register declared plugins
     const rxRegisterPlugin = plugin => Rx.Observable.create(obs => {
+        console.log(`plugin» ${plugin.name}» register`);
         instance.server.register(plugin.data, err => {
             if (err) return obs.error(err);
             instance.events.emit(`plugin:${plugin.name}`, instance);
@@ -124,7 +125,7 @@ module.exports = instance => Rx.Observable.create(observer => {
         .toArray()
         .do(() => instance.events.emit('routes:socket', instance));
 
-    const server$ = Rx.Observable
+    return Rx.Observable
         // register routes
         .combineLatest(
             plugins$,
@@ -143,18 +144,5 @@ module.exports = instance => Rx.Observable.create(observer => {
             })
         }));
 
-    server$.subscribe(
-        () => {
-            observer.next(instance);
-            process.on('SIGINT', function(){
-                instance.server.stop(err => {
-                    if (err) return observer.error(err);
-                    observer.complete();
-                    process.exit(0);
-                });
-            })
-        },
-        err => observer.error(err)
-    )
-});
+};
 
