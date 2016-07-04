@@ -65,10 +65,6 @@ module.exports = instance => Rx.Observable.create(observer => {
                 }, {})
             );
         }, {})
-        .do(path => {
-            console.log(path);
-            process.exit(0);
-        })
 
     path$.subscribe(
         path => observer.next(path),
