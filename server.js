@@ -54,12 +54,16 @@ module.exports = function(instance){
         });
     });
 
-    Rx.Observable.bindNodeCallback(instance.server.register);
-    const plugins$ = Rx.Observable
-        .from(instance.options.plugins)
+    const raw_plugins$ = Rx.Observable.from(instance.options.plugins);
+    const other_plugins$ = raw_plugins$
+        .filter(plugin => !plugin.data)
+    const data_plugins$ = raw_plugins$
         .filter(plugin => plugin.data)
         .mergeMap(plugin => rxRegisterPlugin(plugin))
+    const plugins$ = Rx.Observable
+        .merge(data_plugins$, other_plugins$)
         .toArray()
+        .do(plugins => instance.events.emit('plugins', instance, plugins))
 
     // Enable routes
     const routes$ = Rx.Observable
