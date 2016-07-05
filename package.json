@@ -1,6 +1,6 @@
 {
   "name": "hapi-rx",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A minimalistic wrapper for hapi.js using reactive extensions.",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
