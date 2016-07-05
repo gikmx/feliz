@@ -66,7 +66,13 @@ module.exports = {
                 type: 'String',
                 data: !options.root? options.root : options.root.constructor.name
             }));
-        const root$ = instance.util.rx.path(options.root).isDir;
+
+        const root$ = instance.util.rx.path(options.root)
+            .isDir()
+            .map(isdir => {
+                if (!isdir) throw instance.error('Invalid root directory');
+                return options.root;
+            });
 
         // Initialize and parse optional properties
         if (!instance.util.is(options.server).object()) options.server  = {};

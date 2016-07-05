@@ -23,33 +23,43 @@ module.exports = instance => {
     });
 
     util.rx = {};
+    util.rx.node = {
+        access : Rx.Observable.bindNodeCallback(FS.access),
+        stat   : Rx.Observable.bindNodeCallback(FS.stat),
+        read   : Rx.Observable.bindNodeCallback(FS.readFile)
+    }
+
     util.rx.path = target => {
-        if (!util.is(target).string()) {
-            let err = instance.error.type({
-                name: 'util.rx.path',
-                type: 'String',
-                data: !target? target : target.constructor.name
-            });
-            err.rxType = 'path';
-            throw err;
-        }
+        if (!util.is(target).string()) throw instance.error.type({
+            name: 'util.rx.path',
+            type: 'String',
+            data: !target? target : target.constructor.name
+        });
         target = PATH.isAbsolute(target)? target : PATH.resolve(target);
+
         const path = {};
-        path.stats = Rx.Observable
-            .bindNodeCallback(FS.stat)(target)
-            .catch(err => { throw Object.assign({rxType:'path.stats', err}); })
-        path.isReadable = Rx.Observable
-            .bindNodeCallback(FS.access)(target, FS.R_OK)
-            .catch(err => { throw Object.assign({rxType:'path.isReadable'}, err); })
-            .mapTo(target)
-        path.isDir = Rx.Observable
-            .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isDirectory())
-            .catch(err => { throw Object.assign({rxType:'path.isDir'}, err); })
-            .mapTo(target)
-        path.isFile = Rx.Observable
-            .combineLatest(path.isReadable, path.stats, (_, stats) => stats.isFile())
-            .catch(err => { throw Object.assign({rxType:'path.isFile'}, err); })
-            .mapTo(target)
+
+        path.isReadable = ()=> util.rx.node.access(target, FS.R_OK)
+            .catch(err => Rx.Observable.of(null))
+            .map(Boolean);
+
+        path.stat = ()=> path
+            .isReadable()
+            .switchMap(read => read? util.rx.node.stat(target) : Rx.Observable.of(null))
+
+        path.isDir  = ()=> path.stat().map(stat => stat && stat.isDirectory());
+        path.isFile = ()=> path.stat().map(stat => stat && stat.isFile());
+
+        path.read = () => path.isFile()
+            .mergeMap(isfile => {
+                if (!isfile) throw instance.error.type({
+                    name: 'util.rx.path.read',
+                    type: 'readable file',
+                    data: 'unreadable file'
+                });
+                return util.rx.node.read(target)
+            })
+
         return path;
     };
 
