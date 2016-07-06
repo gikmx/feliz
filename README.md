@@ -1,7 +1,7 @@
 Hapi Rx
 -------
 
-A simple wrapper for Hapi.js & Socket.IO
+A minimalistic wrapper for hapi.js to build servers
 
 
 ## Usage

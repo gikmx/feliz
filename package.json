@@ -1,12 +1,13 @@
 {
-  "name": "hapi-rx",
+  "name": "feliz",
   "version": "0.0.5",
-  "description": "A minimalistic wrapper for hapi.js using reactive extensions.",
+  "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
   "license": "MIT",
   "analyze": true,
   "keywords": [
+    "rx",
     "observable",
     "hapi",
     "hapi.js",
@@ -16,10 +17,10 @@
   ],
   "repository":{
     "type": "git",
-    "url": "https://github.com/gikmx/hapi-rx"
+    "url": "https://github.com/gikmx/feliz"
   },
   "bugs":{
-    "url": "https://github.com/gikmx/hapi-rx/issues"
+    "url": "https://github.com/gikmx/feliz/issues"
   },
   "dependencies": {
     "hapi": "^13.4.1",
