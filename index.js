@@ -36,16 +36,16 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
         .switchMap(()=> Server(self))
         .do(() => self.events.emit('server', self));
 
-    const onCancel = () => self.server.stop(err => {
-        if (err) return observer.error(err);
-        observer.complete();
+    process.on('SIGINT', function(){
+        self.server.stop(err => {
+            if (err) observer.error(err);
+            else observer.complete();
+            process.exit(0);
+        })
     });
 
     self$.subscribe(
-        () => {
-            process.on('SIGINT', onCancel);
-            observer.next(self);
-        },
+        ()  => observer.next(self),
         err => observer.error(err)
     )
 });
