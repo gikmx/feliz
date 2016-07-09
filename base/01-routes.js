@@ -2,66 +2,76 @@
 
 const PATH = require('path');
 const FS   = require('fs');
+const Rx   = require('rxjs/Rx');
 
-const Rx = require('rxjs/Rx');
-
-const rxAccess  = Rx.Observable.bindNodeCallback(FS.access);
-const rxReaddir = Rx.Observable.bindNodeCallback(FS.readdir);
-const rxStat    = Rx.Observable.bindNodeCallback(FS.stat);
-const rxReadAll = function(parent, root=false){
-    if (!root) root = parent;
-    const items$ = rxReaddir(parent)
-        .mergeAll()
-        .mergeMap(filename => Rx.Observable.create(observer => {
-            const path = PATH.join(parent, filename);
-            // determine the possible bundle name
-            let name = `${parent.replace(root, '')}${path.replace(parent, '')}`
-                .slice(1)
-                .slice(0, -1 * PATH.extname(path).length)
-            if (name.indexOf('/index') === name.length -6) name = name.slice(0, -6);
-            // Determine the type of node.
-            rxStat(path).subscribe(
-                stats => observer.next({ path, name, isdir: stats.isDirectory() }),
-                err   => observer.error(err),
-                ()    => observer.complete()
-            );
-        }));
-    const files$ = items$
-        .filter(item => !item.isdir && PATH.extname(item.path) === this.path.ext);
-    const dir$   = items$
-        .filter(item => item.isdir)
-        .mergeMap(item => rxReadAll.call(this, item.path, root));
-    return Rx.Observable
-        .merge(files$, dir$)
-        .map(item => ({ path:item.path, name:item.name }))
-};
+const METHODS = [
+    { type: 'http'   , name:'GET'      },
+    { type: 'http'   , name:'POST'     },
+    { type: 'http'   , name:'PUT'      },
+    { type: 'http'   , name:'DELETE'   },
+    { type: 'http'   , name:'HEAD'     },
+    { type: 'socket' , name:'SOCKET'   }
+];
 
 module.exports = function(){
 
-    const PATH_ROUTES = PATH.join(this.path.app.root, 'routes' + this.path.ext);
+    const PATH_ROUTES = PATH.join(this.path.app.root, `routes${this.path.ext}`);
 
-    // determine which bundles are available (but don't load them)
-    const bundles$ = rxReadAll.call(this, this.path.app.bundles).toArray();
-
-    const route$ = rxAccess(PATH_ROUTES, FS.R_OK)
-        .catch(() => { throw this.error('Missing Routes file'); })
-        .mapTo(require(PATH_ROUTES))
+    const route$ = this.util.rx.path(PATH_ROUTES)
+        .isReadable()
+        .map(isreadable => {
+            if (!isreadable) throw this.error('Missing routes files');
+            return require(PATH_ROUTES);
+        })
+        // convert keys into properties (path)
         .mergeMap(routes => Object
             .keys(routes)
             .map(path => Object.assign({path}, routes[path]))
         )
+        // determine if the bundle actually exists
+        .mergeMap(route => {
+            route.bundle = route.bundle.replace('/', PATH.sep);
+            let path = PATH.join(this.path.app.bundles, route.bundle);
+            return this.util.rx.path(path)
+                .isDir()
+                .map(isdir => isdir? PATH.join(path, 'index') : path)
+                .mergeMap(file => {
+                    path = `${file}${this.path.ext}`;
+                    return this.util.rx.path(path).isFile();
+                })
+                .map(isfile => {
+                    if (!isfile) throw this.error(`Invalid Bundle: ${route.bundle}`)
+                    const name = route.bundle;
+                    delete route.bundle;
+                    return { name, path, bundle: require(path), conf:route }
+                });
+        })
+        // Validate methods
+        .map(route => {
+            const type = this.util.is(route.conf.method);
+            if (!type.string() && !type.array()) route.conf.method = ['GET'];
+            if (type.string()) route.conf.method = [route.conf.method];
+            if (!route.conf.method.length) throw instance.error.type({
+                name: 'route.method',
+                type: 'Array of method(s)',
+                data: 'empty array'
+            });
+            const types = [];
+            route.conf.method.forEach(method => {
+                const methods = METHODS.filter(m => m.name === method);
+                if (!methods.length) throw this.error.type({
+                    name: 'route.method',
+                    type: `valid method (${METHODS.join(',')})`,
+                    data: method
+                });
+                const type = methods.shift().type;
+                if (types.indexOf(type) === -1) types.push(type);
+            });
+            if (types.length > 1)
+                throw this.error(`Methods of route ${route.name} must be the same type`);
+            route.type = types[0];
+            return route;
+        });
 
-    return bundles$
-        .switchMap(bundles => route$
-            .map(route => {
-                const bundle = bundles
-                    .map(item => item.name)
-                    .indexOf(route.bundle);
-                if (bundle === -1) throw this.error(`Invalid Bundle: ${route.bundle}`);
-                route.bundle = bundles[bundle];
-                route.bundle.func = require(route.bundle.path);
-                return route;
-            })
-        )
-        .toArray()
+    return route$.toArray();
 }
