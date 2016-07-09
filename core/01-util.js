@@ -24,9 +24,10 @@ module.exports = instance => {
 
     util.rx = {};
     util.rx.node = {
-        access : Rx.Observable.bindNodeCallback(FS.access),
-        stat   : Rx.Observable.bindNodeCallback(FS.stat),
-        read   : Rx.Observable.bindNodeCallback(FS.readFile)
+        access  : Rx.Observable.bindNodeCallback(FS.access),
+        stat    : Rx.Observable.bindNodeCallback(FS.stat),
+        read    : Rx.Observable.bindNodeCallback(FS.readFile),
+        readdir : Rx.Observable.bindNodeCallback(FS.readdir)
     }
 
     util.rx.path = target => {
@@ -49,6 +50,19 @@ module.exports = instance => {
 
         path.isDir  = ()=> path.stat().map(stat => stat && stat.isDirectory());
         path.isFile = ()=> path.stat().map(stat => stat && stat.isFile());
+
+        path.readdir = ()=> path
+            .isDir()
+            .mergeMap(isdir => {
+                if (!isdir) throw instance.error.type({
+                    name: 'util.rx.path.readdir',
+                    type: 'directory',
+                    data: 'not a directory'
+                })
+                return util.rx.node.readdir(target)
+            })
+            .mergeAll()
+            .map(filename => PATH.join(target, filename));
 
         path.read = () => path.isFile()
             .mergeMap(isfile => {
