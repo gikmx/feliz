@@ -5,129 +5,77 @@ const Hapi     = require('hapi');
 const Socket   = require('socket.io');
 const SocketWc = require('socketio-wildcard');
 
-const METHODS = [
-    { type: 'http'   , name:'GET'      },
-    { type: 'http'   , name:'POST'     },
-    { type: 'http'   , name:'PUT'      },
-    { type: 'http'   , name:'DELETE'   },
-    { type: 'http'   , name:'HEAD'     },
-    { type: 'socket' , name:'SOCKET'   }
-];
 
-module.exports = function(instance){
+module.exports = function(){
 
     // Set configuration and connection defaults
-    instance.options.connection = instance.util
+    this.options.connection = this.util
         .object({ port: process.env.PORT || 8000 })
-        .merge(instance.options.connection);
+        .merge(this.options.connection);
 
-    instance.server = new Hapi.Server(instance.options.server);
-    instance.server.connection(instance.options.connection);
+    this.server = new Hapi.Server(this.options.server);
+    this.server.connection(this.options.connection);
 
     // Enable socket.io integration (in the same port)
-    instance.socket = Socket(instance.server.listener);
-    instance.socket.use(SocketWc());
-    instance.socket.on('connection',function(){
-        instance.events.emit('socket', instance);
-        instance.socket.on('*', function(event){
+    this.socket = Socket(this.server.listener);
+    this.socket.use(SocketWc());
+    this.socket.on('connection',function(){
+        this.events.emit('socket', this);
+        this.socket.on('*', function(event){
             let data  = e.data[1];
             let types = e.data[0].split(':');
             let type  = {
                 subject   : types.shift(),
                 predicate : types.join(':')
             }
-            const route = instance.routes.socket
+            const route = this.routes.socket
                 .filter(route => route.path === type.subject)
                 .shift();
-            if (route) route.bundle.func.call(instance, type.predicate, data);
+            if (route) route.bundle.func.call(this, type.predicate, data);
         });
     })
 
-    // Register declared plugins
-    const rxRegisterPlugin = plugin => Rx.Observable.create(obs => {
-        console.log(`plugin» ${plugin.name}» register`);
-        instance.server.register(plugin.data, err => {
-            if (err) return obs.error(err);
-            instance.events.emit(`plugin:${plugin.name}`, instance);
-            obs.next(plugin);
-            obs.complete();
-        });
-    });
-
-    const raw_plugins$ = Rx.Observable.from(instance.options.plugins);
-    const other_plugins$ = raw_plugins$
-        .filter(plugin => !plugin.data)
-    const data_plugins$ = raw_plugins$
+    // Register plugins
+    const all_plugins$   = Rx.Observable.from(this.options.plugins);
+    const other_plugins$ = all_plugins$.filter(plugin => !plugin.data)
+    const data_plugins$  = all_plugins$
         .filter(plugin => plugin.data)
-        .mergeMap(plugin => rxRegisterPlugin(plugin))
+        .mergeMap(plugin => Rx.Observable.create(obs => {
+            this.server.register(plugin.data, err => {
+                if (err) return obs.error(err);
+                this.events.emit(`plugin:${plugin.name}`, this);
+                obs.next(plugin);
+                obs.complete();
+            });
+        }));
+
     const plugins$ = Rx.Observable
         .merge(data_plugins$, other_plugins$)
         .toArray()
-        .do(plugins => instance.events.emit('plugins', instance, plugins))
-
-    // Enable routes
-    const routes$ = Rx.Observable
-        .from(instance.routes)
-        // generate a route for each method sent
-        .mergeMap(route => {
-            // store the bundle separatedly
-            const bundle = route.bundle;
-            delete route.bundle;
-            // methods can be arrays, so, let's always deal with them.
-            const target = instance.util.is(route.method);
-            if (target.string()) route.method = [route.method];
-            else if(!target.array()) throw instance.error.type({
-                name: 'route.method',
-                type: 'Array',
-                data: !route.method? route.method : route.method.constructor.name
-            });
-            return route.method.map(name => {
-                const methods = METHODS.filter(method => method.name === name);
-                if (!methods.length) throw instance.error.type({
-                    name: 'route.method',
-                    type: 'Valid method',
-                    data: name
-                });
-                return Object.assign({}, route, {
-                    method   : name,
-                    __type   : methods.shift().type,
-                    __bundle : bundle
-                })
-            })
-        });
+        .do(plugins => this.events.emit('plugins', this, plugins))
 
     // Manage http routes
-    const http_routes$ = routes$
-        .filter(route => route.__type == 'http')
+    const http_routes$ = Rx.Observable
+        .from(this.routes)
+        .filter(route => route.type == 'http')
         .map(route => {
-            const props = {
-                type   : route.__type,
-                bundle : route.__bundle
-            };
-            delete route.__type;
-            delete route.__bundle;
-            route.handler = function(request, reply){
-                request.bundle = props;
-                props.bundle.func.call(instance, request, reply);
-            }
-            instance.server.route(route);
+            route.conf.handler = (function(request, reply){
+                this.route = route;
+                route.bundle.call(this, request, reply);
+            }).bind(this);
+            this.server.route(route.conf)
+            this.events.emit(`route:${route.name}`, this);
             return route;
         })
         .toArray()
-        .do(() => instance.events.emit('routes:http', instance));
+        .do(() => this.events.emit('routes:http', this));
 
     // Manage socket routes
-    const socket_routes$ = routes$
-        .filter(route => route.__type == 'socket')
-        .map(route => {
-            route.type   = route.__type;
-            route.bundle = route.__bundle;
-            delete route.__type;
-            delete route.__bundle;
-            return route;
-        })
+    const socket_routes$ = Rx.Observable
+        .from(this.routes)
+        .filter(route => route.type == 'socket')
         .toArray()
-        .do(() => instance.events.emit('routes:socket', instance));
+        .do(() => this.events.emit('routes:socket', this));
 
     return Rx.Observable
         // register routes
@@ -137,11 +85,11 @@ module.exports = function(instance){
             socket_routes$,
             (plugins, http, socket) => ({http, socket})
         )
-        .do(() => instance.events.emit('routes', instance))
+        .do(() => this.events.emit('routes', this))
         // Start server
         .switchMap(routes => Rx.Observable.create(obs => {
-            instance.routes = routes;
-            instance.server.start(err => {
+            this.routes = routes;
+            this.server.start(err => {
                 if (err) return obs.error(err);
                 obs.next(true);
                 obs.complete()
