@@ -32,11 +32,13 @@ module.exports = {
             data: require(PATH.join(path, filename))
         })),
 
-    rxResolve: (instance, item) => Rx.Observable.create(observer => {
-        item.data(instance, item.name).subscribe(
+    rxResolve: function(item){ return Rx.Observable.create(observer => {
+        const data$ = item.data.call(this, item.name);
+        data$.subscribe(
             data => observer.next({ data, name:item.name, type:item.type}),
             err  => observer.error(err),
             ()   => observer.complete()
         );
-    })
+    })}
+
 }

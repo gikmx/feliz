@@ -8,8 +8,7 @@ const Rx = require('rxjs/Rx');
 const rxAccess  = Rx.Observable.bindNodeCallback(FS.access);
 const rxReaddir = Rx.Observable.bindNodeCallback(FS.readdir);
 const rxStat    = Rx.Observable.bindNodeCallback(FS.stat);
-const rxReadAll = (instance, parent, root=false) => {
-    // TODO: This method should use instance's rx utlities
+const rxReadAll = function(parent, root=false){
     if (!root) root = parent;
     const items$ = rxReaddir(parent)
         .mergeAll()
@@ -28,24 +27,24 @@ const rxReadAll = (instance, parent, root=false) => {
             );
         }));
     const files$ = items$
-        .filter(item => !item.isdir && PATH.extname(item.path) === instance.path.ext);
+        .filter(item => !item.isdir && PATH.extname(item.path) === this.path.ext);
     const dir$   = items$
         .filter(item => item.isdir)
-        .mergeMap(item => rxReadAll(instance, item.path, root));
+        .mergeMap(item => rxReadAll.call(this, item.path, root));
     return Rx.Observable
         .merge(files$, dir$)
         .map(item => ({ path:item.path, name:item.name }))
 };
 
-module.exports = instance => {
+module.exports = function(){
 
-    const PATH_ROUTES = PATH.join(instance.path.app.root, 'routes' + instance.path.ext);
+    const PATH_ROUTES = PATH.join(this.path.app.root, 'routes' + this.path.ext);
 
     // determine which bundles are available (but don't load them)
-    const bundles$ = rxReadAll(instance, instance.path.app.bundles).toArray();
+    const bundles$ = rxReadAll.call(this, this.path.app.bundles).toArray();
 
     const route$ = rxAccess(PATH_ROUTES, FS.R_OK)
-        .catch(() => { throw instance.error('Missing Routes file'); })
+        .catch(() => { throw this.error('Missing Routes file'); })
         .mapTo(require(PATH_ROUTES))
         .mergeMap(routes => Object
             .keys(routes)
@@ -58,7 +57,7 @@ module.exports = instance => {
                 const bundle = bundles
                     .map(item => item.name)
                     .indexOf(route.bundle);
-                if (bundle === -1) throw instance.error(`Invalid Bundle: ${route.bundle}`);
+                if (bundle === -1) throw this.error(`Invalid Bundle: ${route.bundle}`);
                 route.bundle = bundles[bundle];
                 route.bundle.func = require(route.bundle.path);
                 return route;

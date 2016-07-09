@@ -14,26 +14,23 @@ const OPTIONS = {
     "app.bundles" : { "type" : "join"    , "args" : ["${root}", "bundles"] }
 };
 
-module.exports = instance => Rx.Observable.create(observer => {
+module.exports = function() { return Rx.Observable.create(observer => {
 
     // The variables available for path replacement
-    const getContext = options => instance.util
+    const getContext = options => this.util
         .object({
             __filename,
             __dirname,
-            root : instance.options.root
+            root : this.options.root
         })
         .merge(options);
 
     // Populate paths
-    if (instance.util.is(instance.options.path).object())
-        instance.options.path = instance.util
-            .object(OPTIONS)
-            .merge(instance.options.path)
-    else instance.options.path = OPTIONS;
+    if (!this.util.is(this.options.path).object()) this.options.path = OPTIONS;
+    else this.options.path = this.util.object(OPTIONS).merge(this.options.path);
 
     const path$ = Rx.Observable
-        .of(instance.options.path)
+        .of(this.options.path)
         // convert the key to a 'name' property
         .mergeMap(paths => Object
             .keys(paths)
@@ -43,14 +40,14 @@ module.exports = instance => Rx.Observable.create(observer => {
             // update the context used for templates
             const context = getContext(result);
             // Resolve (pseudo)template strings sent
-            item.args = item.args.map(arg => instance.util
+            item.args = item.args.map(arg => this.util
                 .string(arg)
                 .toTemplate(context)
             )
             // construct the value with the data sent
             const path = PATH[item.type].apply(PATH, item.args);
             // resolve the key name into a proper object
-            return instance.util.object(result).merge(item.name
+            return this.util.object(result).merge(item.name
                 .split('.')
                 .reduce((acc, cur, i, arr) => {
                     let val = i === arr.length - 1? path : {};
@@ -71,4 +68,5 @@ module.exports = instance => Rx.Observable.create(observer => {
         err  => observer.error(err),
         ()   => observer.complete()
     );
-});
+
+})};

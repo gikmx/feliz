@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -15,17 +15,17 @@
     "socket.io",
     "server"
   ],
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "https://github.com/gikmx/feliz"
   },
-  "bugs":{
+  "bugs": {
     "url": "https://github.com/gikmx/feliz/issues"
   },
   "dependencies": {
     "hapi": "^13.4.1",
     "lodash.merge": "^4.4.0",
-    "rxjs": "^5.0.0-beta.9",
+    "rxjs": "^5.0.0-beta.10",
     "socket.io": "^1.4.8",
     "socketio-wildcard": "^0.3.0"
   },

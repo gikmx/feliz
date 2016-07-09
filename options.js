@@ -4,28 +4,28 @@ const FS   = require('fs');
 const PATH = require('path');
 const Rx   = require('rxjs/Rx');
 
-const rxPlugins = (instance, plugins) => Rx.Observable
+const rxPlugins = function(plugins){ return Rx.Observable
     .from(plugins)
     .mergeMap(plugin => {
         // Validate plugin and properties types
-        if (!instance.util.is(plugin).object()) throw instance.error.type({
+        if (!this.util.is(plugin).object()) throw this.error.type({
             name: 'plugin',
             type: 'Object',
             data: !plugin? plugin : plugin.constructor.name
         });
-        if (!instance.util.is(plugin.name).string()) throw instance.error.type({
+        if (!this.util.is(plugin.name).string()) throw this.error.type({
             name: 'plugin.name',
             type: 'String',
             data: !plugin.name? plugin.name : plugin.name.constructor.name
         });
         // Validate and register events (if existent)
-        if (instance.util.is(plugin.when).object()) return Rx.Observable
+        if (this.util.is(plugin.when).object()) return Rx.Observable
             .of(plugin.when)
             .mergeMap(events => Object
                 .keys(events)
                 .map(name => ({name, data:events[name]}))
             )
-            .map(event => instance.events.on(event.name, function(self){
+            .map(event => this.events.on(event.name, function(self){
                 console.log('event»', event.name)
                 event.data.call(self, self);
             }))
@@ -35,6 +35,7 @@ const rxPlugins = (instance, plugins) => Rx.Observable
         return Rx.Observable.of(plugin);
     })
     .toArray();
+}
 
 module.exports = {
 
@@ -45,42 +46,40 @@ module.exports = {
     }),
 
     // core modules will be available at this point
-    rxResolve: (instance, options) => Rx.Observable.create(observer => {
+    rxResolve: function(options){ return Rx.Observable.create(observer => {
 
-        if (!instance.util) return observer.error(instance.error('Utilities missing.'));
+        if (!this.util) return observer.error(this.error('Utilities missing.'));
 
         const name = options.name;
         options = options.data;
 
-        if (!instance.util.is(options).object())
-            return observer.error(instance.error.type({
-                name: 'options',
-                type: 'Object',
-                data: !options? options : options.constructor.name
-            }));
+        if (!this.util.is(options).object()) return observer.error(this.error.type({
+            name: 'options',
+            type: 'Object',
+            data: !options? options : options.constructor.name
+        }));
 
         // Parse and define the (required) 'root' property
-        if (!instance.util.is(options.root).string())
-            return observer.error(instance.error.type({
-                name: 'options.root',
-                type: 'String',
-                data: !options.root? options.root : options.root.constructor.name
-            }));
+        if (!this.util.is(options.root).string()) return observer.error(this.error.type({
+            name: 'options.root',
+            type: 'String',
+            data: !options.root? options.root : options.root.constructor.name
+        }));
 
-        const root$ = instance.util.rx.path(options.root)
+        const root$ = this.util.rx.path(options.root)
             .isDir()
             .map(isdir => {
-                if (!isdir) throw instance.error('Invalid root directory');
+                if (!isdir) throw this.error('Invalid root directory');
                 return options.root;
             });
 
         // Initialize and parse optional properties
-        if (!instance.util.is(options.server).object()) options.server  = {};
-        if (!instance.util.is(options.connection).object()) options.connection  = {};
+        if (!this.util.is(options.server).object()) options.server  = {};
+        if (!this.util.is(options.connection).object()) options.connection  = {};
 
         // Initialize and parse plugins
-        if (!instance.util.is(options.plugins).array()) options.plugins = [];
-        const plugins$ = rxPlugins(instance, options.plugins);
+        if (!this.util.is(options.plugins).array()) options.plugins = [];
+        const plugins$ = rxPlugins.call(this, options.plugins);
 
         // the resulting options
         const options$ = Rx.Observable
@@ -95,5 +94,5 @@ module.exports = {
             err     => observer.error(err),
             ()      => observer.complete()
         );
-    })
+    })}
 }

@@ -22,9 +22,11 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
 
     const modules$ = Rx.Observable
         .concat(core$, opts$, base$)
-        .concatMap(mod => mod.type == 'module'?
-            Modules.rxResolve(self, mod) : Options.rxResolve(self, mod)
-        )
+        .concatMap(mod => {
+            if (mod.type == 'module') return Modules.rxResolve.call(self, mod);
+            if (mod.type == 'data') return Options.rxResolve.call(self, mod);
+            throw new Error('Unknown module type');
+        })
         .do(target => {
             self[target.name] = target.data;
             self.events.emit(`module:${target.name}`, self);
@@ -33,7 +35,7 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
         .do(() => self.events.emit('modules', self))
 
     const self$ = modules$
-        .switchMap(()=> Server(self))
+        .switchMap(()=> Server.call(self))
         .do(() => self.events.emit('server', self));
 
     process.on('SIGINT', function(){
