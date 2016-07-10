@@ -26,7 +26,6 @@ const rxPlugins = function(plugins){ return Rx.Observable
                 .map(name => ({name, data:events[name]}))
             )
             .map(event => this.events.on(event.name, function(self){
-                console.log('event»', event.name)
                 event.data.call(self, self);
             }))
             .toArray()

@@ -3,6 +3,7 @@
 const PATH   = require('path');
 const EVENTS = require('events');
 const Rx     = require('rxjs/Rx');
+const FError = require('feliz.error');
 
 const Server  = require('./server');
 const Modules = require('./modules');
@@ -12,6 +13,7 @@ class Events extends EVENTS {};
 
 module.exports = (options={}) => Rx.Observable.create(observer => {
 
+    const error = FError();
     const self  = {};
     self.set    = (key, val) => self[key] = val;
     self.events = new Events();
@@ -25,7 +27,11 @@ module.exports = (options={}) => Rx.Observable.create(observer => {
         .concatMap(mod => {
             if (mod.type == 'module') return Modules.rxResolve.call(self, mod);
             if (mod.type == 'data') return Options.rxResolve.call(self, mod);
-            throw new Error('Unknown module type');
+            throw error.type({
+                name: 'module',
+                type: 'module || data',
+                data: mod.type
+            });
         })
         .do(target => {
             self[target.name] = target.data;

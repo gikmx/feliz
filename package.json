@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -23,6 +23,8 @@
     "url": "https://github.com/gikmx/feliz/issues"
   },
   "dependencies": {
+    "feliz.error": "0.0.2",
+    "feliz.util": "0.0.2",
     "hapi": "^13.4.1",
     "lodash.merge": "^4.4.0",
     "rxjs": "^5.0.0-beta.10",

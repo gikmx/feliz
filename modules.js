@@ -1,26 +1,19 @@
 'use strict';
 
-const FS   = require('fs');
-const PATH = require('path');
-const Rx   = require('rxjs/Rx');
+const FS        = require('fs');
+const PATH      = require('path');
+const Rx        = require('rxjs/Rx');
+const FelizUtil = require('feliz.util');
 
-const rxReaddir = Rx.Observable.bindNodeCallback(FS.readdir);
-const rxIsDir   = path => Rx.Observable.create(observer => {
-    FS.stat(path, (error, stats) => {
-        if (error) return observer.error(error);
-        if (!stats.isDirectory())
-            return observer.error(new Error(`Invalid directory: ${item.path}`));
-        observer.next(path);
-        observer.complete();
-    });
-});
+const util = FelizUtil();
 
 // TODO: Make this recursive.
 module.exports = {
 
-    rxLoad: path => Rx.Observable.of(path)
-        .mergeMap(rxIsDir)
-        .mergeMap(rxReaddir)
+    rxLoad: path => Rx.Observable
+        .of(path)
+        .mergeMap(path => util.rx.path(path).readdir())
+        .toArray()
         // Iterate directory contents sorted by name (can be numbered)
         .mergeMap(filenames => filenames.sort())
         // remove digits from filename and require the file
@@ -29,7 +22,7 @@ module.exports = {
             name: PATH
                 .basename(filename, PATH.extname(filename))
                 .replace(/^\d+\-/,''),
-            data: require(PATH.join(path, filename))
+            data: require(filename)
         })),
 
     rxResolve: function(item){ return Rx.Observable.create(observer => {
