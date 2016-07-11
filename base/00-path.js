@@ -9,9 +9,9 @@ const rxAccess = Rx.Observable.bindNodeCallback(FS.access);
 const rxMkDir  = Rx.Observable.bindNodeCallback(FS.mkdir);
 
 const OPTIONS = {
-    "ext"         : { "type" : "extname" , "args" : ["${__filename}"] },
-    "app.root"    : { "type" : "join"    , "args" : ["${root}"]  },
-    "app.bundles" : { "type" : "join"    , "args" : ["${root}", "bundles"] }
+    "ext"     : { "type" : "extname" , "args" : ["${__filename}"] },
+    "root"    : { "type" : "join"    , "args" : ["${root}"]  },
+    "bundles" : { "type" : "join"    , "args" : ["${root}", "bundles"] }
 };
 
 module.exports = function() { return Rx.Observable.create(observer => {

@@ -15,7 +15,7 @@ const METHODS = [
 
 module.exports = function(){
 
-    const PATH_ROUTES = PATH.join(this.path.app.root, `routes${this.path.ext}`);
+    const PATH_ROUTES = PATH.join(this.path.root, `routes${this.path.ext}`);
 
     const route$ = this.util.rx.path(PATH_ROUTES)
         .isReadable()
@@ -31,7 +31,7 @@ module.exports = function(){
         // determine if the bundle actually exists
         .mergeMap(route => {
             route.bundle = route.bundle.replace('/', PATH.sep);
-            let path = PATH.join(this.path.app.bundles, route.bundle);
+            let path = PATH.join(this.path.bundles, route.bundle);
             return this.util.rx.path(path)
                 .isDir()
                 .map(isdir => isdir? PATH.join(path, 'index') : path)

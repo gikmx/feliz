@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
