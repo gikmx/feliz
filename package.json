@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -32,9 +32,12 @@
     "socketio-wildcard": "^0.3.0"
   },
   "scripts": {
-    "start": "./node_modules/.bin/nodemon"
+    "start": "./node_modules/.bin/nodemon",
+    "precommit": "./node_modules/.bin/feliz.hooks pre-commit"
   },
   "devDependencies": {
+    "feliz.hooks": "0.0.4",
+    "husky": "^0.11.5",
     "nodemon": "^1.9.2"
   }
 }
