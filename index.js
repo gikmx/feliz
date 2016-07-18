@@ -5,6 +5,7 @@ const EVENTS = require('events');
 const Rx     = require('rxjs/Rx');
 const FError = require('feliz.error');
 
+const Package = require('./package.json');
 const Server  = require('./server');
 const Modules = require('./modules');
 const Options = require('./options');
@@ -14,7 +15,7 @@ class Events extends EVENTS {};
 module.exports = (options={}) => Rx.Observable.create(observer => {
 
     const error = FError();
-    const self  = {};
+    const self  = { info: Package };
     self.set    = (key, val) => self[key] = val;
     self.events = new Events();
 
