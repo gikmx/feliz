@@ -88,7 +88,6 @@ module.exports = function(){
         .do(() => this.events.emit('routes', this))
         // Start server
         .switchMap(routes => Rx.Observable.create(obs => {
-            this.routes = routes;
             this.server.start(err => {
                 if (err) return obs.error(err);
                 obs.next(true);
