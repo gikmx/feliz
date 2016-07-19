@@ -40,6 +40,7 @@ module.exports = function(){
     const other_plugins$ = all_plugins$.filter(plugin => !plugin.data)
     const data_plugins$  = all_plugins$
         .filter(plugin => plugin.data)
+        .do(plugin => this.events.emit(`plugin:${plugin.name}:before`, this))
         .mergeMap(plugin => Rx.Observable.create(obs => {
             this.server.register(plugin.data, err => {
                 if (err) return obs.error(err);
@@ -47,7 +48,8 @@ module.exports = function(){
                 obs.next(plugin);
                 obs.complete();
             });
-        }));
+        }))
+        .do(plugin => this.events.emit(`plugin:${plugin.name}:after`, this));
 
     const plugins$ = Rx.Observable
         .merge(data_plugins$, other_plugins$)
