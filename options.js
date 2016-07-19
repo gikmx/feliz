@@ -72,6 +72,18 @@ module.exports = {
                 return options.root;
             });
 
+        // Initilize events sent at startup
+        if (!this.util.is(options.events).object()) options.events = {};
+        const events$ = Rx.Observable
+            .of(options.events)
+            .mergeMap(events => Object
+                .keys(events)
+                .map(name => ({name, func:events[name]}))
+            )
+            .do(event => this.events.on(event.name, event.func.bind(this)))
+            .toArray()
+            .mapTo(null);
+
         // Initialize and parse optional properties
         if (!this.util.is(options.server).object()) options.server  = {};
         if (!this.util.is(options.connection).object()) options.connection  = {};
@@ -82,7 +94,7 @@ module.exports = {
 
         // the resulting options
         const options$ = Rx.Observable
-            .combineLatest(root$, plugins$, (root, plugins)=> {
+            .combineLatest(events$, root$, plugins$, (events, root, plugins)=> {
                 options.root    = root;
                 options.plugins = plugins;
                 return options;
