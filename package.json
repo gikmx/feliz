@@ -1,8 +1,8 @@
 {
   "name": "feliz",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "A minimalistic wrapper for hapi.js to build servers",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
   "license": "MIT",
   "analyze": true,
@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "feliz.hooks": "0.0.4",
-    "husky": "^0.11.5",
-    "nodemon": "^1.9.2"
+    "husky": "^0.11.5"
   }
 }
