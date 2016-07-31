@@ -1,69 +1,31 @@
-Hapi Rx
--------
+[![Build Status](https://travis-ci.org/gikmx/feliz.svg?branch=master)](https://travis-ci.org/gikmx/feliz)
+[![Coverage Status](https://coveralls.io/repos/github/gikmx/feliz/badge.svg?branch=master)](https://coveralls.io/github/gikmx/feliz?branch=master)
+[![npm](https://img.shields.io/npm/dt/feliz.svg?maxAge=2592000)]()
 
-A minimalistic wrapper for hapi.js to build servers
+# feliz.js
+A minimal wrapper for agile web development.
+
+# Compatibility
+
+* Node v6.2+
+* MacOS 10+, Linux
 
 
-## Usage
-__index.js__
+# Installation
+Feliz.js tries to be as modular as possible, we know that every project is different
+So we've prepared several presets that allow you to kickstart your development.
+Also we've published several plugins that allow you to extend the core functionality.
 
-    'use strict'
-    const HapiRx = require('hapi-rx');
+```bash
+npm i -S feliz feliz.preset-{presetName} feliz-{pluginName}
+```
+# Reference
+## Feliz
+The main instance
 
-    const server$ = HapiRx({
-        root: './app',
-    });
+**Example**  
+```js
+const Feliz = require('feliz');
+const feliz$ = Feliz({root:'./app'});
+```
 
-    server$.subscribe(
-        hapirx => console.log('Server running.'),
-        err    => { throw err; }
-    )
-
-__app/routes.js__
-
-    'use strict';
-
-    const Joi = require('joi');
-
-    module.exports = {
-
-        '/{id?}': {
-            method: 'GET',
-            bundle: 'root',
-            config: {
-                cache: false,
-                validate: {
-                    params:{
-                        id: Joi.string().regex(/[a-f0-9]{24}/)
-                    }
-                }
-            }
-        },
-
-        'action':{
-            method: 'SOCKET',
-            bundle: 'socket'
-        },
-
-    }
-
-__app/bundles/root/index.js__
-
-    'use strict'
-
-    module.exports = (request, reply){
-        let path = this.path.bundles; // Access to the server instance
-        if (request.params.id) return reply(`Hello ${request.params.id}`);
-        reply('Hello world');
-    }
-
-__app/bundles/socket.js__
-
-    'use strict'
-    // Still in alpha
-    module.exports = (type, data){
-        // emited using channel: socket:test
-        if (type == 'test'){
-            // do something with data
-        }
-    }

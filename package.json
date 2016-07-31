@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "lib/index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -22,6 +22,18 @@
   "bugs": {
     "url": "https://github.com/gikmx/feliz/issues"
   },
+  "engines": {
+    "node": ">=6.2.0"
+  },
+  "scripts": {
+    "start": "npm-watch",
+    "docs": "jsdoc2md -t ./template.hbs 'lib/**/*.js' > README.md",
+    "test": "tape test/*.js | ./node_modules/.bin/tap-diff",
+    "coverage-pre": "istanbul cover tape `pwd`/test/*.js",
+    "coverage-post": "cat `pwd`/coverage/lcov.info | coveralls && rm -Rf coverage",
+    "coverage":"npm run coverage-pre && npm run coverage-post",
+    "precommit": "npm test && feliz.hooks pre-commit"
+  },
   "dependencies": {
     "feliz.error": "0.0.2",
     "feliz.util": "0.0.5",
@@ -30,12 +42,29 @@
     "socket.io": "^1.4.8",
     "socketio-wildcard": "^0.3.0"
   },
-  "scripts": {
-    "start": "./node_modules/.bin/nodemon",
-    "precommit": "./node_modules/.bin/feliz.hooks pre-commit"
-  },
   "devDependencies": {
     "feliz.hooks": "0.0.4",
-    "husky": "^0.11.5"
+    "husky": "^0.11.5",
+    "jsdoc-to-markdown": "^1.3.6",
+    "npm-watch": "^0.1.5",
+    "tap-diff": "^0.1.1",
+    "tape": "^4.6.0"
+  },
+  "watch": {
+    "test": {
+      "patterns": [
+        "lib",
+        "test"
+      ],
+      "extensions": "js",
+      "quiet": true
+    },
+    "docs": {
+      "patterns": [
+        "lib"
+      ],
+      "extensions": "js",
+      "quiet": true
+    }
   }
 }
