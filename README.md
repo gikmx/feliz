@@ -132,13 +132,7 @@ usage example, hopefully it will help you while this documentation is completed.
 ---
 
 ## API Documentation (WIP)
-{{#module name="feliz"}}
-{{>body~}}
-{{>member-index~}}
-{{>separator~}}
-{{>members~}}
-{{/module}}
-
+ERROR, Cannot find module.
 ---
 
 ## License
