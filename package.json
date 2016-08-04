@@ -27,7 +27,7 @@
   },
   "scripts": {
     "start": "npm-watch",
-    "docs": "jsdoc2md -t ./template.hbs -d 1 'lib/**/*.js' > README.md",
+    "docs": "jsdoc2md -t ./template.hbs 'lib/**/*.js' > README.md",
     "test": "tape ./test/**/*.js | tap-spec",
     "cover": "npm run cover:stats && npm run cover:send",
     "cover:check": "npm run cover:stats && istanbul check-coverage",
