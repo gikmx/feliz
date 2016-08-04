@@ -10,7 +10,7 @@ The quickest wat to kickstart the development of your app.
 * Node v6.2+
 * MacOS, Linux, Windows (untested)
 
-## OVERVIEW
+## Overview
 By itself, this module doesn't really do much, it actually just enables a simple [hapi.js](http://github.com/hapijs/hapi)
 server and adds some routing sugar here and there.
 
@@ -132,7 +132,100 @@ usage example, hopefully it will help you while this documentation is completed.
 ---
 
 ## API Documentation (WIP)
-ERROR, Cannot find module.
+### Table of contents
+
+* [feliz](#module_feliz) ⇒ <code>[Observable](#Observable)</code>
+    * _static_
+        * [.package](#module_feliz.package) ⇒ <code>object</code>
+        * [.observable](#module_feliz.external_observable) ⇒ <code>function</code>
+        * [.error](#module_feliz.external_error) ⇒ <code>object</code>
+        * [.util](#module_feliz.external_util) ⇒ <code>object</code>
+    * _inner_
+        * [~events](#module_feliz..events) ⇒ <code>[Events](#Events)</code>
+
+### Feliz(conf)
+The wrapper simply consists in a function that - when called - returns an observable
+containing either the instance (with among other stuff an initialize server) and/or
+a stream of errors found either on the initialization stage or afterwards.
+
+**Returns**: <code>[Observable](#Observable)</code> - Either the instance, or a stream of errors.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| conf | <code>[Configuration](#Configuration)</code> | An object containig the configuration for each part                               of the framework. |
+
+**Example**  
+```js
+const Feliz = require('feliz');
+const feliz$ = Feliz({root:'./app'});
+feliz$.subscribe(
+    feliz => console.log('feliz is ready'),
+    error => console.error(error);
+);
+```
+<a name="module_feliz.package"></a>
+
+### feliz.package ⇒ <code>object</code>
+Package information
+
+**Kind**: static constant of <code>[feliz](#module_feliz)</code>  
+**See**: [package.json](https://github.com/gikmx/feliz/blob/master/package.json)  
+<a name="module_feliz.external_observable"></a>
+
+### feliz.observable ⇒ <code>function</code>
+A constructor to build observables
+
+**Kind**: static external of <code>[feliz](#module_feliz)</code>  
+**See**: [RxJS](http://github.com/ReactiveX/rxjs)  
+<a name="module_feliz.external_error"></a>
+
+### feliz.error ⇒ <code>object</code>
+Error handling methods
+
+**Kind**: static external of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.error](http://github.com/gikmx/feliz.error)  
+<a name="module_feliz.external_util"></a>
+
+### feliz.util ⇒ <code>object</code>
+General utilities
+
+**Kind**: static external of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.util](http://github.com/gikmx/feliz.util)  
+<a name="module_feliz..events"></a>
+
+### feliz~events ⇒ <code>[Events](#Events)</code>
+Event handler.
+
+**Kind**: inner property of <code>[feliz](#module_feliz)</code>  
+**Returns**: <code>[Events](#Events)</code> - An events interface.  
+
+---
+
+<a name="Observable"></a>
+
+## Observable
+**Kind**: global class  
+**Classdef**: The observable type returned by [rxjs](http://github.com/reactivex/rxjs)  
+**See**: [RxJS](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html)  
+<a name="Events"></a>
+
+## Events
+**Kind**: global class  
+**Classdef**: An instance of Node's Events interface to hook into
+          different parts of feliz's process.  
+**See**: [Node's Events interface](https://nodejs.org/api/events.html)  
+<a name="Configuration"></a>
+
+## Configuration
+**Kind**: global class  
+**Classdef**: The main configuration object. it contains a property for each feliz functionality.  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| root | <code>String</code> | The path to the application folder. |
+
+
 ---
 
 ## License
