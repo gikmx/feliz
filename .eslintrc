@@ -1,7 +1,7 @@
 {
     "parserOptions":{
-        "ecmaVersion":6,
-        "ecmaFeatures": {
+        "ecmaVersion"  : 6,
+        "ecmaFeatures" : {
         }
     },
     "env":{
