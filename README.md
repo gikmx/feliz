@@ -135,13 +135,19 @@ usage example, hopefully it will help you while this documentation is completed.
 ### Table of contents
 
 * [feliz](#module_feliz) ⇒ <code>[Observable](#Observable)</code>
+    * _instance_
+        * [.conf](#module_feliz+conf) : <code>[Configuration](#module_Configuration)</code>
+        * [.events](#module_feliz+events) : <code>[Events](#module_Events)</code>
+        * [.package](#module_feliz+package) : <code>object</code>
+        * [.observable](#module_feliz+observable) : <code>object</code>
+        * [.error](#module_feliz+error) : <code>object</code>
+        * [.util](#module_feliz+util) ⇒ <code>object</code>
+        * [.set(key, value, attr)](#module_feliz+set) ⇒ <code>mixed</code>
     * _static_
         * [.package](#module_feliz.package) ⇒ <code>object</code>
-        * [.observable](#module_feliz.external_observable) ⇒ <code>function</code>
         * [.error](#module_feliz.external_error) ⇒ <code>object</code>
         * [.util](#module_feliz.external_util) ⇒ <code>object</code>
-    * _inner_
-        * [~events](#module_feliz..events) ⇒ <code>[Events](#Events)</code>
+        * [.observable](#module_feliz.external_observable) ⇒ <code>object</code>
 
 ### Feliz(conf)
 The wrapper simply consists in a function that - when called - returns an observable
@@ -149,10 +155,11 @@ containing either the instance (with among other stuff an initialize server) and
 a stream of errors found either on the initialization stage or afterwards.
 
 **Returns**: <code>[Observable](#Observable)</code> - Either the instance, or a stream of errors.  
+**See**: [Configuration](#module_Configuration)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| conf | <code>[Configuration](#Configuration)</code> | An object containig the configuration for each part                               of the framework. |
+| conf | <code>[Configuration](#module_Configuration)</code> | An object containig the configuration for each part                               of the framework. |
 
 **Example**  
 ```js
@@ -163,20 +170,87 @@ feliz$.subscribe(
     error => console.error(error);
 );
 ```
+
+if you wish to have more than once instance of Feliz running, use 'new'
+to instantantiate it, otherwise the same instance will be returned every time.
+__Please bear in mind this is an experimental feature.__ So it's recommended to
+only use the non-instantiated version of feliz.
+**Example**  
+```js
+const Feliz = require('feliz');
+const feliz$1 = new Feliz({root:'./app'});
+const feliz$2 = new Feliz({root:'./your-other-app'});
+...
+```
+<a name="module_feliz+conf"></a>
+
+### feliz.conf : <code>[Configuration](#module_Configuration)</code>
+The configuration sent as parameter extended by defaults.
+
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [Configuration](#module_Configuration)  
+**Example**  
+```js
+// Assume this is the default configuration
+// { foo:'bar', baz:true }
+...
+feliz => {
+    feliz.conf = { foo:false };
+    console.log(feliz.conf); // { foo:false, baz:true }
+}
+...
+```
+<a name="module_feliz+events"></a>
+
+### feliz.events : <code>[Events](#module_Events)</code>
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [Events](#module_Events)  
+<a name="module_feliz+package"></a>
+
+### feliz.package : <code>object</code>
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.package](#module_feliz.package)  
+<a name="module_feliz+observable"></a>
+
+### feliz.observable : <code>object</code>
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.observable](module:feliz.observable)  
+<a name="module_feliz+error"></a>
+
+### feliz.error : <code>object</code>
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.error](module:feliz.error)  
+<a name="module_feliz+util"></a>
+
+### feliz.util ⇒ <code>object</code>
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [feliz.util](module:feliz.util)  
+<a name="module_feliz+set"></a>
+
+### feliz.set(key, value, attr) ⇒ <code>mixed</code>
+The instance setter, if you want to add new members to the feliz instance, this is
+the way of doing it. Avoid directly modifying the instance.
+
+__Note__: If you send a setter/getter as attribute, the `value`, and
+          the attributes `writable` and `configurable` will be ignored.
+
+**Kind**: instance method of <code>[feliz](#module_feliz)</code>  
+**Returns**: <code>mixed</code> - The assigned value.  
+**See**: [Attributes](#Attributes)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | The member name. |
+| value | <code>mixed</code> | The value that will be assigned to given member. |
+| attr | <code>[Attributes](#Attributes)</code> | The attributes the member will have. |
+
 <a name="module_feliz.package"></a>
 
 ### feliz.package ⇒ <code>object</code>
-Package information
+The parsed representation of the `package.json` file.
 
-**Kind**: static constant of <code>[feliz](#module_feliz)</code>  
+**Kind**: static property of <code>[feliz](#module_feliz)</code>  
 **See**: [package.json](https://github.com/gikmx/feliz/blob/master/package.json)  
-<a name="module_feliz.external_observable"></a>
-
-### feliz.observable ⇒ <code>function</code>
-A constructor to build observables
-
-**Kind**: static external of <code>[feliz](#module_feliz)</code>  
-**See**: [RxJS](http://github.com/ReactiveX/rxjs)  
 <a name="module_feliz.external_error"></a>
 
 ### feliz.error ⇒ <code>object</code>
@@ -191,15 +265,54 @@ General utilities
 
 **Kind**: static external of <code>[feliz](#module_feliz)</code>  
 **See**: [feliz.util](http://github.com/gikmx/feliz.util)  
-<a name="module_feliz..events"></a>
+<a name="module_feliz.external_observable"></a>
 
-### feliz~events ⇒ <code>[Events](#Events)</code>
-Event handler.
+### feliz.observable ⇒ <code>object</code>
+A constructor to build observables
 
-**Kind**: inner property of <code>[feliz](#module_feliz)</code>  
-**Returns**: <code>[Events](#Events)</code> - An events interface.  
+**Kind**: static external of <code>[feliz](#module_feliz)</code>  
+**See**: [RxJS](http://github.com/ReactiveX/rxjs)  
 
 ---
+
+<a name="module_Configuration"></a>
+
+## Configuration : <code>object</code>
+The configuration object needed to customise the behaviour of feliz.
+
+<a name="module_Configuration.root"></a>
+
+### Configuration.root : <code>string</code>
+The path of the application directory.
+
+**Kind**: static __required__ property of <code>[Configuration](#module_Configuration)</code>  
+
+---
+
+<a name="module_Events"></a>
+
+## Events : <code>EventEmitter</code>
+An instance of Node's Events interface to hook into different parts of feliz's process.
+
+**See**: [Node's Events interface](https://nodejs.org/api/events.html)  
+
+---
+
+<a name="Attributes"></a>
+
+## Attributes : <code>object</code>
+**Kind**: global class  
+**Classdef**: The attributes an instance member will have.  
+**See**: [Object.defineProperty()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| configurable | <code>boolean</code> | The member may be changed and/or deleted. <br>                                    __Default__: `false` |
+| writable | <code>boolean</code> | The member may be changed with an [assignment operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Assignment_Operators) <br>                                    __Default__: `false` |
+| enumerable | <code>boolean</code> | The member wll show up during enumeration. <br>                                    __Default__: `true` |
+| get | <code>function</code> | Defines a getter for the property. <br>                                    __Default__: `undefined` |
+| set | <code>function</code> | Defines a setter for the property. <br>                                    __Default__: `undefined` |
 
 <a name="Observable"></a>
 
@@ -207,24 +320,6 @@ Event handler.
 **Kind**: global class  
 **Classdef**: The observable type returned by [rxjs](http://github.com/reactivex/rxjs)  
 **See**: [RxJS](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html)  
-<a name="Events"></a>
-
-## Events
-**Kind**: global class  
-**Classdef**: An instance of Node's Events interface to hook into
-          different parts of feliz's process.  
-**See**: [Node's Events interface](https://nodejs.org/api/events.html)  
-<a name="Configuration"></a>
-
-## Configuration
-**Kind**: global class  
-**Classdef**: The main configuration object. it contains a property for each feliz functionality.  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| root | <code>String</code> | The path to the application folder. |
-
 
 ---
 
