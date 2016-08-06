@@ -132,7 +132,7 @@ usage example, hopefully it will help you while this documentation is completed.
 ---
 
 ## API Documentation (WIP)
-{{#modules}}
+{{#module name='feliz'}}
 ### Table of contents
 {{>member-index~}}
 
@@ -140,12 +140,24 @@ usage example, hopefully it will help you while this documentation is completed.
 {{>body~}}
 {{>separator~}}
 {{>members~}}
-{{/modules}}
+{{/module}}
 
 ---
 
-{{#classes}}
-{{>docs}}
+{{#module name='Configuration'}}
+{{>docs~}}
+{{/module}}
+
+---
+
+{{#module name='Events'}}
+{{>docs~}}
+{{/module}}
+
+---
+
+{{#classes~}}
+{{>docs~}}
 {{/classes}}
 
 ---
