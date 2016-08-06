@@ -280,12 +280,47 @@ A constructor to build observables
 ## Configuration : <code>object</code>
 The configuration object needed to customise the behaviour of feliz.
 
+
+* [Configuration](#module_Configuration) : <code>object</code>
+    * [.root](#module_Configuration.root) : <code>string</code>
+    * [.path](#module_Configuration.path) : <code>object</code>
+
 <a name="module_Configuration.root"></a>
 
 ### Configuration.root : <code>string</code>
 The path of the application directory.
 
 **Kind**: static __required__ property of <code>[Configuration](#module_Configuration)</code>  
+<a name="module_Configuration.path"></a>
+
+### Configuration.path : <code>object</code>
+Paths available through the framework.
+
+Each of the elements of this object, will be parsed by
+[Node's Path Module](https://nodejs.org/api/path.html).
+
+Every element must contain a `type` property that will be mapped to one of the
+available module methods, and it also must contain an `args` property (an array)
+that will be mapped to the arguments of given method.
+
+The property `args` can contain special string variables (wrapped by `${}`)
+that can be replaced for anything of the following values:
+
+##### Available variables
+| name         | value                                                                          |
+|--------------|--------------------------------------------------------------------------------|
+| `__filename` | The full path pointing to the main module.                                     |
+| `__dirname`  | The full path of the directory where the main module is located.               |
+| `{property}` | Every `string` property defined on the 1st level of [Configuration](#module_Configuration). ie: `root` |
+
+##### Default values
+| name           | description                                | default                        |
+|----------------|--------------------------------------------|--------------------------------|
+| `path.ext`     | The default extension name                 | The same as the mainmodule.    |
+| `path.root`    | The location of the application directory. | The one defined on `conf.root` |
+| `path.bundles` | The location of the bundles directory.     | `conf.root/bundles`            |
+
+**Kind**: static __optional__ property of <code>[Configuration](#module_Configuration)</code>  
 
 ---
 

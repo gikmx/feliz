@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "A minimalistic wrapper for hapi.js to build servers",
   "main": "lib/index.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -28,7 +28,7 @@
   "scripts": {
     "start": "npm-watch",
     "docs": "jsdoc2md -t ./template.hbs 'lib/**/*.js' > README.md",
-    "test": "tape ./test/**/*.js | tap-spec",
+    "test": "tape ./test/feliz.js | tap-spec",
     "cover": "npm run cover:stats && npm run cover:send",
     "cover:check": "npm run cover:stats && istanbul check-coverage",
     "cover:stats": "istanbul cover tape -- ./test/**/*.js",
