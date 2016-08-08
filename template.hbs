@@ -4,7 +4,7 @@
 [![NPM](https://nodei.co/npm/feliz.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/feliz/)
 
 # feliz.js
-The quickest wat to kickstart the development of your app.
+The quickest way to kickstart the development of your app.
 
 ## Compatibility
 

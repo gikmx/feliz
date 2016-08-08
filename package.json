@@ -1,8 +1,8 @@
 {
   "name": "feliz",
   "version": "0.0.28",
-  "description": "A minimalistic wrapper for hapi.js to build servers",
-  "main": "lib/index.js",
+  "description": "The quickest way to kickstart the development of your app.",
+  "main": "lib/feliz.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
   "license": "MIT",
   "analyze": true,
