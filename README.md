@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/gikmx/feliz.svg?branch=master)](https://travis-ci.org/gikmx/feliz)
 [![Coverage Status](https://coveralls.io/repos/github/gikmx/feliz/badge.svg?branch=master)](https://coveralls.io/github/gikmx/feliz?branch=master)
-[![npm](https://img.shields.io/npm/dt/feliz.svg?maxAge=2592000)]()
+<br>
+[![NPM](https://nodei.co/npm/feliz.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/feliz/)
 
 # feliz.js
 The quickest wat to kickstart the development of your app.
@@ -137,6 +138,7 @@ usage example, hopefully it will help you while this documentation is completed.
 * [feliz](#module_feliz) ⇒ <code>[Observable](#Observable)</code>
     * _instance_
         * [.conf](#module_feliz+conf) : <code>[Configuration](#module_Configuration)</code>
+        * [.path](#module_feliz+path) : <code>object</code>
         * [.events](#module_feliz+events) : <code>[Events](#module_Events)</code>
         * [.package](#module_feliz+package) : <code>object</code>
         * [.observable](#module_feliz+observable) : <code>object</code>
@@ -199,6 +201,50 @@ feliz => {
     console.log(feliz.conf); // { foo:false, baz:true }
 }
 ...
+```
+<a name="module_feliz+path"></a>
+
+### feliz.path : <code>object</code>
+A path resolver extended by defaults
+
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [path](#module_Configuration.path)  
+**Todo**
+
+- [ ] Allow custom context.
+- [ ] Determine if path validation should occur.
+      Given the nature of the parser (using Node's Path module in its entirety)
+      it's not possible to ensure that every property is actually a path
+      ie: `path.ext`. so validation doesn't make sense as of now.
+
+**Example**  
+```js
+// Assuming these are the default paths
+// { ext:'.js', root:'/path/to/app' }
+
+// You add some more defaults previous to instantiation
+const feliz$ = Feliz({
+  ...
+  path: { common: { type:'join', args:['${root}', 'common'] } },
+  ...
+});
+
+feliz$.subscribe(
+  feliz => {
+    // and then you add even more.
+    feliz.path = {
+      'master': { type:'join', args:['${root}', 'master'] }
+    };
+
+    console.log(feliz.path);
+    // {
+    //   ext    : '.js',
+    //   root   : '/path/to/app',
+    //   common : '/path/to/app/commmon',
+    //   master : '/path/to/app/master'
+    // }
+  }
+)
 ```
 <a name="module_feliz+events"></a>
 
