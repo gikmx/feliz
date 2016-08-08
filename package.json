@@ -31,13 +31,13 @@
     "test": "tape ./test/feliz.js | tap-spec",
     "cover": "npm run cover:stats && npm run cover:send",
     "cover:check": "npm run cover:stats && istanbul check-coverage",
-    "cover:stats": "istanbul cover tape -- ./test/**/*.js",
+    "cover:stats": "istanbul cover tape -- ./test/feliz.js",
     "cover:send": "cat ./coverage/lcov.info | coveralls",
     "precommit": "npm test && npm run cover:check && npm run docs && git add --force README.md && feliz.hooks pre-commit"
   },
   "dependencies": {
     "feliz.error": "0.0.3",
-    "feliz.util": "0.0.9",
+    "feliz.util": "0.0.11",
     "hapi": "^14.1.0",
     "rxjs": "^5.0.0-beta.10",
     "socket.io": "^1.4.8",
