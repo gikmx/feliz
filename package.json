@@ -9,11 +9,8 @@
   "keywords": [
     "rx",
     "observable",
-    "hapi",
-    "hapi.js",
-    "socket",
-    "socket.io",
-    "server"
+    "framework",
+    "minimal"
   ],
   "repository": {
     "type": "git",

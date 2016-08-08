@@ -12,18 +12,20 @@ The quickest wat to kickstart the development of your app.
 * MacOS, Linux, Windows (untested)
 
 ## Overview
-By itself, this module doesn't really do much, it actually just enables a simple [hapi.js](http://github.com/hapijs/hapi)
-server and adds some routing sugar here and there.
-
-To unleash the full power of the wrapper, you should take a look to the
-[plugin list](https://github.com/gikmx?query=feliz-), specially those that enable
-bundle management.
+Feliz, it's not a module, it's a methodology to simplify the development of your next great
+application. By itself feliz.js does nothing, if you really want to unleash the full power 
+of it, you should take a look to the [plugin list](https://github.com/gikmx?query=feliz-),
+specially server plugins and those that enable bundle management.
 
 If you need to start right away, you can also take a look to the
 [presets list](https://github.com/gikmx?query=feliz.preset) to see if one of the defined
 flavors of development suits your needs.
 
-There's also an [example website](http://github.com/hectormenendez/gik.website) where you can
+## Example apps
+These are some examples of how feliz.js is being used on the wild:
+
+* [gik.website](http://github.com/hectormenendez/gik.website)
+
 take a look of how this module can be used while the documentation is completed.
 
 ## Installation
