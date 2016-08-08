@@ -140,6 +140,7 @@ usage example, hopefully it will help you while this documentation is completed.
         * [.conf](#module_feliz+conf) : <code>[Configuration](#module_Configuration)</code>
         * [.events](#module_feliz+events) : <code>[Events](#module_Events)</code>
         * [.path](#module_feliz+path) : <code>object</code>
+        * [.plugins](#module_feliz+plugins) : <code>array</code>
         * [.package](#module_feliz+package) : <code>object</code>
         * [.observable](#module_feliz+observable) : <code>object</code>
         * [.error](#module_feliz+error) : <code>object</code>
@@ -253,6 +254,25 @@ feliz$.subscribe(
   }
 )
 ```
+<a name="module_feliz+plugins"></a>
+
+### feliz.plugins : <code>array</code>
+The loaded plugins list.
+Internally, the plugin handler executes plugins as if they were core modules; So its
+mandatory for each plugin function to return an observable of their instance.
+
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [plugins](#module_Configuration.plugins)  
+**Example**  
+```js
+const plugin = function PluginName(info){ // since the value of `this` is necessary, avoid using ()=>
+    console.log(`Hello, I'm a plugin an my name's ${info.name}`);
+    return this.observable.of(this);
+}
+const feliz$ => Feliz({ ..., plugins:[plugin] });
+
+// will output log on subscription.
+```
 <a name="module_feliz+package"></a>
 
 ### feliz.package : <code>object</code>
@@ -333,6 +353,7 @@ The configuration object needed to customise the behaviour of feliz.
     * [.root](#module_Configuration.root) : <code>string</code>
     * [.path](#module_Configuration.path) : <code>object</code>
     * [.events](#module_Configuration.events) : <code>array</code>
+    * [.plugins](#module_Configuration.plugins) : <code>array</code>
 
 <a name="module_Configuration.root"></a>
 
@@ -373,7 +394,13 @@ that can be replaced for anything of the following values:
 <a name="module_Configuration.events"></a>
 
 ### Configuration.events : <code>array</code>
-Custom events auto triggering by default.
+A list of event listeners to setup on startup.
+
+**Kind**: static __optional__ property of <code>[Configuration](#module_Configuration)</code>  
+<a name="module_Configuration.plugins"></a>
+
+### Configuration.plugins : <code>array</code>
+A list of plugins to setup on startup.
 
 **Kind**: static __optional__ property of <code>[Configuration](#module_Configuration)</code>  
 

@@ -123,12 +123,37 @@ tests.push({
 tests.push({
     desc: 'valid.conf with simple event declaration',
     conf: { root: path.empty, events: [
-        {name:'core:events', data: function(t, test){}},
+        {name:'core:events', data: function(){}},
     ]},
     pass: true,
     cbak: (t, test) => {
         if (test.out instanceof Error) return;
         const pass = test.out.events._events['core:events'] !== undefined;
         t.equal(pass, true, `should emit an event when ${test.desc}`);
+    }
+});
+
+tests.push({
+    desc: 'valid conf.root with simple plugin',
+    conf: {
+        root: path.empty,
+        plugins:[
+            function test(info){ return this.observable.of(this); }
+        ],
+        events: [
+            { name:'plugin:test', data: function(){} },
+            { name:'plugin:test~before', data: function(){} }
+        ]
+    },
+    pass: true,
+    cbak: (t, test) => {
+        if (test.out instanceof Error) return;
+        const pass1 = test.out.events._events['plugin:test'] !== undefined;
+        const pass2 = test.out.events._events['plugin:test~before'] !== undefined;
+        const pass3 = test.out.plugins[0] === 'test';
+        const msg1  = `should emit corresponding events when ${test.desc}`;
+        const msg2  = `should show the correct number of plugins when ${test.desc}`;
+        t.equal(pass1 && pass2, true, msg1);
+        t.equal(pass3, true, msg2);
     }
 })
