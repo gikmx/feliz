@@ -138,8 +138,8 @@ usage example, hopefully it will help you while this documentation is completed.
 * [feliz](#module_feliz) ⇒ <code>[Observable](#Observable)</code>
     * _instance_
         * [.conf](#module_feliz+conf) : <code>[Configuration](#module_Configuration)</code>
-        * [.path](#module_feliz+path) : <code>object</code>
         * [.events](#module_feliz+events) : <code>[Events](#module_Events)</code>
+        * [.path](#module_feliz+path) : <code>object</code>
         * [.package](#module_feliz+package) : <code>object</code>
         * [.observable](#module_feliz+observable) : <code>object</code>
         * [.error](#module_feliz+error) : <code>object</code>
@@ -202,6 +202,13 @@ feliz => {
 }
 ...
 ```
+<a name="module_feliz+events"></a>
+
+### feliz.events : <code>[Events](#module_Events)</code>
+The main event handler
+
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**See**: [Events](#module_Events)  
 <a name="module_feliz+path"></a>
 
 ### feliz.path : <code>object</code>
@@ -246,11 +253,6 @@ feliz$.subscribe(
   }
 )
 ```
-<a name="module_feliz+events"></a>
-
-### feliz.events : <code>[Events](#module_Events)</code>
-**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
-**See**: [Events](#module_Events)  
 <a name="module_feliz+package"></a>
 
 ### feliz.package : <code>object</code>
@@ -330,6 +332,7 @@ The configuration object needed to customise the behaviour of feliz.
 * [Configuration](#module_Configuration) : <code>object</code>
     * [.root](#module_Configuration.root) : <code>string</code>
     * [.path](#module_Configuration.path) : <code>object</code>
+    * [.events](#module_Configuration.events) : <code>array</code>
 
 <a name="module_Configuration.root"></a>
 
@@ -365,6 +368,12 @@ that can be replaced for anything of the following values:
 | `path.ext`     | The default extension name                 | The same as the mainmodule.    |
 | `path.root`    | The location of the application directory. | The one defined on `conf.root` |
 | `path.bundles` | The location of the bundles directory.     | `conf.root/bundles`            |
+
+**Kind**: static __optional__ property of <code>[Configuration](#module_Configuration)</code>  
+<a name="module_Configuration.events"></a>
+
+### Configuration.events : <code>array</code>
+Custom events auto triggering by default.
 
 **Kind**: static __optional__ property of <code>[Configuration](#module_Configuration)</code>  
 

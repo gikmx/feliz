@@ -112,9 +112,23 @@ tests.push({
     pass:true,
     cbak: (t, test) => {
         const pth = Object.assign({}, expectedDefaultPath);
+        const msg = `should have correctly created path when ${test.desc}`;
         pth.root = {hello:'1', one:{two:'1/2', one:'1/1'}};
         pth.bundles = {test:'hola'};
         pth.hola = {test:'/hola'};
-        t.deepEqual(pth, test.out.path, 'message here:');
+        t.deepEqual(pth, test.out.path, msg);
+    }
+});
+
+tests.push({
+    desc: 'valid.conf with simple event declaration',
+    conf: { root: path.empty, events: [
+        {name:'core:events', data: function(t, test){}},
+    ]},
+    pass: true,
+    cbak: (t, test) => {
+        if (test.out instanceof Error) return;
+        const pass = test.out.events._events['core:events'] !== undefined;
+        t.equal(pass, true, `should emit an event when ${test.desc}`);
     }
 })
