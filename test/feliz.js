@@ -8,7 +8,7 @@ const FelizUtil    = require('feliz.util');
 const Package = require('../package.json');
 const Feliz   = require('../lib/feliz');
 
-const tests = require('./tests');
+const tests = require('./cases');
 
 Tape('The feliz constructor', t => {
     tests.forEach(test => {
@@ -23,12 +23,12 @@ Tape('The feliz constructor', t => {
     t.end();
 });
 
-Tape('The returned feliz observable', t => tests.stream().subscribe(
-    test => {
+Tape('The returned feliz observable', t => {
+    const onInstance = test => {
         const t1 = test.out instanceof Error;
-        const t2 = test.out.constructor.name === 'feliz';
-        const m1 = `should ${test.pass? 'not':''} stream errors when ${test.desc}`;
-        const m2 = `should ${test.pass? '':'not'} resolve to feliz when ${test.desc}`;
+        const t2 = test.out.constructor.name === 'Feliz';
+        const m1 = `should ${test.pass? 'not':''} stream error when ${test.desc}`;
+        const m2 = `should ${test.pass? '':'not'} resolve to instance when ${test.desc}`;
         if (test.pass){
             // should not stream errors and return a feliz instance
             t.equal(t1, false, m1);
@@ -42,13 +42,21 @@ Tape('The returned feliz observable', t => tests.stream().subscribe(
             // unexpected instance
             if (t1 !== true) FelizUtil.examine(test.out.conf);
         }
-    },
-    error => {
+        if (test.cbak) test.cbak(t, test);
+    };
+    const onError = error => {
         t.fail('should never show this message while testing');
         console.log(error);
-    },
-    () => t.end()
-));
+    };
+    const onEnd = () => t.end();
+    const tests$ = tests
+        .stream()
+        .concatMap(test => (new Feliz(test.conf))
+            .map(feliz => Object.assign({out:feliz}, test))
+            .catch(error => Observable.of(Object.assign({out: error}, test)))
+        )
+        .subscribe(onInstance, onError, onEnd);
+});
 
 Tape('The feliz.observable static member', t => {
     t.equal(typeof Feliz.observable, 'function', 'should be a function');
