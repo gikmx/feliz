@@ -47,6 +47,7 @@ tests.push({
 });
 
 const expectedDefaultPath = {
+    sep     : PATH.sep,
     ext     : '',
     root    : path.empty,
     bundles : PATH.join(path.empty,'bundles')
