@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "The quickest way to kickstart the development of your app.",
   "main": "lib/feliz.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "feliz.error": "0.0.3",
-    "feliz.util": "0.0.11",
+    "feliz.util": "0.0.12",
     "hapi": "^14.1.0",
     "rxjs": "^5.0.0-beta.10",
     "socket.io": "^1.4.8",
