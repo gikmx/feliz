@@ -46,7 +46,7 @@
     "husky": "^0.11.5",
     "istanbul": "^0.4.4",
     "jsdoc-to-markdown": "^1.3.6",
-    "npm-watch": "git+https://github.com/hectormenendez/npm-watch.git",
+    "npm-watch": "^0.1.6",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0"
   },
