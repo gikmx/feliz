@@ -8,6 +8,12 @@ class Tests extends Array { stream (){ return Observable.from(this) } }
 const path = { root: PATH.join(__dirname, 'app') };
 path.empty = PATH.join(path.root, 'empty');
 
+const expectedDefaultPath = {
+    sep     : PATH.sep,
+    ext     : '',
+    root    : path.empty
+}
+
 const tests = module.exports = new Tests();
 
 tests.push({
@@ -45,13 +51,6 @@ tests.push({
     conf: { root:path.empty, path: null },
     pass: false
 });
-
-const expectedDefaultPath = {
-    sep     : PATH.sep,
-    ext     : '',
-    root    : path.empty,
-    bundles : PATH.join(path.empty,'bundles')
-}
 
 tests.push({
     desc: 'valid conf.root with empty object con conf.path',
@@ -158,3 +157,4 @@ tests.push({
         t.equal(pass3, true, msg2);
     }
 })
+
