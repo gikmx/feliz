@@ -106,7 +106,7 @@ tests.push({
             'root.one.two' : { type : 'join', args : ['1','2'] } ,
             'root.one.one' : { type : 'join', args : ['1','1'] } ,
             'bundles.test' : { type : 'join', args : ['hola']  } ,
-            'hola.test'    : { type : 'join', args : ['/hola'] }
+            'hola.test'    : { type : 'join', args : ['/hola'] } ,
         }
     },
     pass:true,
@@ -117,6 +117,10 @@ tests.push({
         pth.bundles = {test:'hola'};
         pth.hola = {test:'/hola'};
         t.deepEqual(pth, test.out.path, msg);
+        test.out.path = {nested:{type:'join', args:['${hola.test}', '2']}}
+        const msg1 = `should have update the reference after each setter when ${test.desc}`;
+        pth.nested = [pth.hola.test,'2'].join(PATH.sep);
+        t.deepEqual(pth, test.out.path, msg1);
     }
 });
 
