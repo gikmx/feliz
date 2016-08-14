@@ -139,6 +139,7 @@ usage example, hopefully it will help you while this documentation is completed.
 
 * [feliz](#module_feliz) ⇒ <code>[Observable](#Observable)</code>
     * _instance_
+        * [.debug](#module_feliz+debug) ⇒ <code>mixed</code>
         * [.conf](#module_feliz+conf) : <code>[Configuration](#module_Configuration)</code>
         * [.events](#module_feliz+events) : <code>[Events](#module_Events)</code>
         * [.path](#module_feliz+path) : <code>object</code>
@@ -153,6 +154,7 @@ usage example, hopefully it will help you while this documentation is completed.
         * [.error](#module_feliz.external_error) ⇒ <code>object</code>
         * [.util](#module_feliz.external_util) ⇒ <code>object</code>
         * [.observable](#module_feliz.external_observable) ⇒ <code>object</code>
+        * [.debug](#module_feliz.external_debug) ⇒ <code>function</code>
 
 ### Feliz(conf)
 The wrapper simply consists in a function that - when called - returns an observable
@@ -186,6 +188,28 @@ const Feliz = require('feliz');
 const feliz$1 = new Feliz({root:'./app'});
 const feliz$2 = new Feliz({root:'./your-other-app'});
 ...
+```
+<a name="module_feliz+debug"></a>
+
+### feliz.debug ⇒ <code>mixed</code>
+A wrapper for [debug](http://github.com/visionmedia/debug) to ensure namespacing.
+If no params sent (besides the name) it returns a debugger function instead.
+
+**Kind**: instance property of <code>[feliz](#module_feliz)</code>  
+**Returns**: <code>mixed</code> - A debugger function or null  
+**See**: [debug](https://github.com/visionmedia/debug)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | An identifier to be used by the debug handler. |
+| [...params] | <code>mixed</code> | The element to be debugged. |
+
+**Example**  
+```js
+feliz.debug('test', 'hello world'); // will debug as 'feliz:test'
+// or
+const debug = feliz.debug('test');
+debug('hello world');
 ```
 <a name="module_feliz+conf"></a>
 
@@ -342,6 +366,13 @@ A constructor to build observables
 
 **Kind**: static external of <code>[feliz](#module_feliz)</code>  
 **See**: [RxJS](http://github.com/ReactiveX/rxjs)  
+<a name="module_feliz.external_debug"></a>
+
+### feliz.debug ⇒ <code>function</code>
+An utility to debug your code
+
+**Kind**: static external of <code>[feliz](#module_feliz)</code>  
+**See**: [debug](http://github.com/visionmedia/debug)  
 
 ---
 

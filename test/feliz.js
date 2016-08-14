@@ -9,6 +9,7 @@ const Package = require('../package.json');
 const Feliz   = require('../lib/feliz');
 
 const tests = require('./cases');
+const debug   = Feliz.debug('feliz:test');
 
 Tape('The feliz constructor', t => {
     tests.forEach(test => {
@@ -34,19 +35,17 @@ Tape('The returned feliz observable', t => {
             t.equal(t1, false, m1);
             t.equal(t2, true, m2);
             // unexpected error
-            if (t1 !== false) FelizUtil.examine(test.out);
+            if (t1 !== false) debug(FelizUtil.examine(test.out));
         } else {
             // should stream and error and not return a feliz instance
             t.equal(t1, true, m1);
             t.equal(t2, false, m2);
-            // unexpected instance
-            if (t1 !== true) FelizUtil.examine(test.out.conf);
         }
         if (test.cbak) test.cbak(t, test);
     };
     const onError = error => {
         t.fail('should never show this message while testing');
-        console.log(error);
+        debug(error);
     };
     const onEnd = () => t.end();
     const tests$ = tests
