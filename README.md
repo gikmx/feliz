@@ -192,12 +192,23 @@ const feliz$2 = new Feliz({root:'./your-other-app'});
 <a name="module_feliz+debug"></a>
 
 ### feliz.debug ⇒ <code>mixed</code>
-A wrapper for [debug](http://github.com/visionmedia/debug) to ensure namespacing.
-If no params sent (besides the name) it returns a debugger function instead.
+A wrapper for [debug](http://github.com/visionmedia/debug) with some extras.
+
+If no params sent (besides the name) it returns a debugger function instead so you can
+use it several times without having to write the type over and over again.
+
+If you send objects or arrays they will be automatically examined using
+[feliz.util](http://github.com/gikmx/feliz.util). Also, if you don't want these objects
+to show up, just send the `TRACER` environment variable with any positive value.
+ie: `DEBUG=feliz* TRACER=true node index.js`
 
 **Kind**: instance property of <code>[feliz](#module_feliz)</code>  
 **Returns**: <code>mixed</code> - A debugger function or null  
-**See**: [debug](https://github.com/visionmedia/debug)  
+**See**
+
+- [debug](https://github.com/visionmedia/debug)
+- [feliz.util](https://github.com/gikmx/feliz.util)
+
 
 | Param | Type | Description |
 | --- | --- | --- |

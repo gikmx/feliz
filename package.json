@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "The quickest way to kickstart the development of your app.",
   "main": "lib/feliz.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
