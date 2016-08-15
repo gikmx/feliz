@@ -1,6 +1,6 @@
 {
   "name": "feliz",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "description": "The quickest way to kickstart the development of your app.",
   "main": "lib/feliz.js",
   "author": "Héctor Menéndez <etor@gik.mx>",
@@ -23,7 +23,7 @@
     "node": ">=6.2.0"
   },
   "scripts": {
-    "start": "DEBUG=feliz* npm-watch",
+    "start": "npm-watch",
     "docs": "jsdoc2md -t ./template.hbs 'lib/**/*.js' > README.md",
     "test": "tape ./test/feliz.js | tap-spec",
     "cover": "npm run cover:stats && npm run cover:send",
