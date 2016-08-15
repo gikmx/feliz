@@ -126,14 +126,20 @@ tests.push({
 
 tests.push({
     desc: 'valid.conf with simple event declaration',
-    conf: { root: path.empty, events: [
-        {name:'core:events', data: function(){}},
-    ]},
+    conf: {
+        root: path.empty,
+        events: {
+            on: [
+                {name:'events', data: function(){}},
+            ]
+        }
+    },
     pass: true,
     cbak: (t, test) => {
         if (test.out instanceof Error) return;
-        const pass = test.out.events._events['core:events'] !== undefined;
-        t.equal(pass, true, `should emit an event when ${test.desc}`);
+        const feliz = test.out;
+        const pass1 = feliz.util.is(feliz.events._events.events).function();
+        t.equal(pass1, true, `should emit an event when ${test.desc}`);
     }
 });
 
@@ -144,10 +150,12 @@ tests.push({
         plugins:[
             function test(info){ return this.observable.of(this); }
         ],
-        events: [
-            { name:'plugin:test', data: function(){} },
-            { name:'plugin:test~before', data: function(){} }
-        ]
+        events: {
+            on: [
+                { name:'plugin:test', data: function(){} },
+                { name:'plugin:test~before', data: function(){} }
+            ]
+        }
     },
     pass: true,
     cbak: (t, test) => {
