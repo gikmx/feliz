@@ -10,7 +10,7 @@ path.empty = PATH.join(path.root, 'empty');
 
 const expectedDefaultPath = {
     sep     : PATH.sep,
-    ext     : '',
+    ext     : PATH.extname(__filename),
     root    : path.empty
 }
 
@@ -53,7 +53,7 @@ tests.push({
 });
 
 tests.push({
-    desc: 'valid conf.root with empty object con conf.path',
+    desc: 'valid conf.root with empty object with conf.path',
     conf: { root:path.empty, path: {} },
     pass: true,
     cbak: (t, test) => {
@@ -111,16 +111,18 @@ tests.push({
     },
     pass:true,
     cbak: (t, test) => {
+
         const pth = Object.assign({}, expectedDefaultPath);
         const msg = `should have correctly created path when ${test.desc}`;
         pth.root = {hello:'1', one:{two:'1/2', one:'1/1'}};
         pth.bundles = {test:'hola'};
         pth.hola = {test:'/hola'};
         t.deepEqual(pth, test.out.path, msg);
-        test.out.path = {nested:{type:'join', args:['${hola.test}', '2']}}
+        // make an update to the path an check if variable can be used
         const msg1 = `should have update the reference after each setter when ${test.desc}`;
+        test.out.path = {nested:{type:'join', args:['${hola.test}', '2']}}
         pth.nested = [pth.hola.test,'2'].join(PATH.sep);
-        t.deepEqual(pth, test.out.path, msg1);
+        t.deepEqual(test.out.path, pth, msg1);
     }
 });
 
