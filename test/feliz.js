@@ -1,85 +1,229 @@
 'use strict';
 
-const Tape         = require('tape');
-const {Observable} = require('rxjs/Rx')
+const PATH = require('path');
+
+const Test         = require('feliz.test');
 const FelizError   = require('feliz.error');
 const FelizUtil    = require('feliz.util');
+const {Observable} = require('rxjs/Rx');
 
-const Package = require('../package.json');
 const Feliz   = require('../lib/feliz');
-const tests = require('./cases');
+const Package = require('../package.json');
 
-Tape('The feliz constructor', t => {
-    tests.forEach(test => {
-        const feliz = () => new Feliz(test.conf);
-        t.doesNotThrow(feliz, null, `should not throw when ${test.desc}`);
-        const feliz$ = feliz();
-        const msg1 = `should return a RxJS observable when ${test.desc}`;
-        const name  = feliz$.constructor.name;
-        const isObs = (name == 'Observable' || name == 'ScalarObservable');
-        t.equal(isObs, true, msg1);
-    });
-    t.end();
-});
+const path = { root: PATH.join(__dirname, 'app') };
+path.empty = PATH.join(path.root, 'empty');
 
-Tape('The returned feliz observable', t => {
-    const onInstance = test => {
-        const t1 = test.out instanceof Error;
-        const t2 = test.out.constructor.name === 'Feliz';
-        const m1 = `should ${test.pass? 'not':''} stream error when ${test.desc}`;
-        const m2 = `should ${test.pass? '':'not'} resolve to instance when ${test.desc}`;
-        if (test.pass){
-            // should not stream errors and return a feliz instance
-            t.equal(t1, false, m1);
-            t.equal(t2, true, m2);
-            // unexpected error
-            if (t1 !== false) console.log(FelizUtil.examine(test.out));
-        } else {
-            // should stream and error and not return a feliz instance
-            t.equal(t1, true, m1);
-            t.equal(t2, false, m2);
+const expected = {
+    path: {
+        sep  : PATH.sep,
+        ext  : PATH.extname(__filename),
+        root : path.empty
+    }
+};
+
+const tests = [
+    {
+        desc: 'no conf sent',
+        conf: null,
+        pass: false
+    },
+    {
+        desc: 'falsy value on conf.root',
+        conf: {root:null},
+        pass: false
+    },
+    {
+        desc: 'inexistent relative dir on conf.root',
+        conf: {root:'./zxcvlzck'},
+        pass: false
+    },
+    {
+        desc: 'inexistent absolute dir on conf.root',
+        conf: {root:'/hjshs/zxcvlzck'},
+        pass: false
+    },
+    {
+        desc: 'empty existent dir on conf.root',
+        conf: { root:path.empty },
+        pass: true
+    },
+    {
+        desc: 'valid conf.root with non-object conf.path',
+        conf: { root:path.empty, path: null },
+        pass: false
+    },
+    {
+        desc: 'valid conf.root with empty object with conf.path',
+        conf: { root:path.empty, path: {} },
+        pass: true,
+        call: function(tape, response) {
+            if (response instanceof Error) return;
+            const msg = `should have path umodified when ${this.desc}`;
+            tape.deepEqual(response.path, expected.path, msg);
+            tape.end();
         }
-        if (test.cbak) test.cbak(t, test);
-    };
-    const onError = error => {
-        t.fail('should never show this message while testing');
-        console.log(error);
-    };
-    const onEnd = () => t.end();
-    const tests$ = tests
-        .stream()
-        .concatMap(test => (new Feliz(test.conf))
-            .map(feliz => Object.assign({out:feliz}, test))
-            .catch(error => Observable.of(Object.assign({out: error}, test)))
-        )
-        .subscribe(onInstance, onError, onEnd);
-});
+    },
+    {
+        desc: 'valid conf.root with non-object path definition',
+        conf: { root:path.empty, path:{test:null} },
+        pass: false
+    },
+    {
+        desc: 'valid conf.root with empty path definition',
+        conf: { root:path.empty, path:{test:{}} },
+        pass: false
+    },
+    {
+        desc: 'valid conf.root with invalid path defintiion',
+        conf: { root:path.empty, path: {test:{ type:'iDontExist', args:[1,2] }} },
+        pass: false,
+    },
+    {
+        desc: 'valid conf.root with custom conf.path',
+        conf: {
+            root: path.empty,
+            path: { test: { type:'join', args:['${root}', 'test'] } }
+        },
+        pass: true,
+        call: (tape, response)=> {
+            if (response instanceof Error) return;
+            const msg = `should have correctly created path when ${this.desc}`;
+            const pth = { test: PATH.join(path.empty, 'test') };
+            tape.deepEqual(response.path, Object.assign(pth, expected.path), msg);
+            tape.end();
+        }
+    },
+    {
+        desc: 'valid conf.root with complex conf.path',
+        conf: {
+            root: path.empty,
+            path: {
+                'root.hello'   : { type : 'join', args : ['1']     } ,
+                'root.one.two' : { type : 'join', args : ['1','2'] } ,
+                'root.one.one' : { type : 'join', args : ['1','1'] } ,
+                'bundles.test' : { type : 'join', args : ['hola']  } ,
+                'hola.test'    : { type : 'join', args : ['/hola'] } ,
+            }
+        },
+        pass:true,
+        call: function(tape, response) {
+            const pth = Object.assign({}, expected.path);
+            const msg = `should have correctly created path when ${this.desc}`;
+            pth.root = {hello:'1', one:{two:'1/2', one:'1/1'}};
+            pth.bundles = {test:'hola'};
+            pth.hola = {test:'/hola'};
+            tape.deepEqual(pth, response.path, msg);
+            // make an update to the path an check if variable can be used
+            const msg1 = `should have update the reference after each setter when ${this.desc}`;
+            response.path = {nested:{type:'join', args:['${hola.test}', '2']}}
+            pth.nested = [pth.hola.test,'2'].join(PATH.sep);
+            tape.deepEqual(response.path, pth, msg1);
+            tape.end();
+        }
+    },
+    {
+        desc: 'valid.conf with simple event declaration',
+        conf: {
+            root: path.empty,
+            events: {
+                on: [
+                    {name:'events', data: function(){}},
+                ]
+            }
+        },
+        pass: true,
+        call: function(tape, response) {
+            if (response instanceof Error) return;
+            const feliz = response;
+            const pass1 = feliz.util.is(feliz.events._events.events).function();
+            tape.equal(pass1, true, `should emit an event when ${this.desc}`);
+            tape.end();
+        }
+    },
+    {
+        desc: 'valid conf.root with simple plugin',
+        conf: {
+            root: path.empty,
+            plugins:[
+                function test(info){ return this.observable.of(this); }
+            ],
+            events: {
+                on: [
+                    { name:'plugin:test', data: function(){} },
+                    { name:'plugin:test~before', data: function(){} }
+                ]
+            }
+        },
+        pass: true,
+        call: function(tape, response) {
+            if (response instanceof Error) return;
+            const pass1 = response.events._events['plugin:test'] !== undefined;
+            const pass2 = response.events._events['plugin:test~before'] !== undefined;
+            const pass3 = response.plugins[0] === 'test';
+            const msg1  = `should emit corresponding events when ${this.desc}`;
+            const msg2  = `should show the correct number of plugins when ${this.desc}`;
+            tape.equal(pass1 && pass2, true, msg1);
+            tape.equal(pass3, true, msg2);
+            tape.end();
+        }
+    }
+];
 
-Tape('The feliz.observable static member', t => {
-    t.equal(typeof Feliz.observable, 'function', 'should be a function');
-    const fn1 = Feliz.observable.toString();
-    const fn2 = Observable.toString();
-    t.equal(fn1, fn2, 'should be the same function as rxjs');
-    t.end();
-});
+const cases = [
+    {
+        desc: 'The feliz constructor',
+        test: tape => tests.forEach((test, i) => {
+            const feliz = () => new Feliz(test.conf);
+            tape.doesNotThrow(feliz, null, `should not throw when ${test.desc}`);
+            const feliz$ = feliz();
+            const msg1 = `should return a RxJS observable when ${test.desc}`;
+            const name  = feliz$.constructor.name;
+            const isObs = (name == 'Observable' || name == 'ScalarObservable');
+            tape.equal(isObs, true, msg1);
+            if (i === tests.length-1) tape.end();
+        })
+    },
+    {
+        desc: 'The feliz.observable static member',
+        test: function(tape){
+            tape.equal(typeof Feliz.observable, 'function', 'should be a function');
+            const fn1 = Feliz.observable.toString();
+            const fn2 = Observable.toString();
+            tape.equal(fn1, fn2, 'should be the same function as rxjs');
+            tape.end();
+        }
+    },
+    {
+        desc: 'The feliz.error static member',
+        test: function(tape){
+            tape.deepEqual(Feliz.error, FelizError, 'should be the feliz.error module');
+            tape.equal(!!Feliz.error, true, 'should be a non falsy value');
+            tape.equal(Feliz.error.constructor.name, 'Function', 'should be a function');
+            tape.end();
+        }
+    },
+    {
+        desc: 'The feliz.util static member',
+        test: function(tape){
+            tape.deepEqual(Feliz.util, FelizUtil, 'should be the feliz.util module');
+            tape.equal(!!Feliz.util, true, 'should be a non falsy value');
+            tape.equal(Feliz.util.constructor.name, 'Object', 'should be an object');
+            tape.end();
+        }
+    },
+    {
+        desc: 'The feliz.package static member',
+        test: function(tape){
+            tape.deepEqual(Feliz.package, Package, 'should be the same object as package.json');
+            tape.equal(!!Feliz.package, true, 'should be a non falsy value');
+            tape.equal(Feliz.package.constructor.name, 'Object', 'should be an object');
+            tape.end();
+        }
+    },
+    {
+        desc: 'The returned feliz instance',
+        test: tests
+    }
+];
 
-Tape('The feliz.error static member', t => {
-    t.deepEqual(Feliz.error, FelizError, 'should be the feliz.error module');
-    t.equal(!!Feliz.error, true, 'should be a non falsy value');
-    t.equal(Feliz.error.constructor.name, 'Function', 'should be a function');
-    t.end();
-});
-
-Tape('The feliz.util static member', t => {
-    t.deepEqual(Feliz.util, FelizUtil, 'should be the feliz.util module');
-    t.equal(!!Feliz.util, true, 'should be a non falsy value');
-    t.equal(Feliz.util.constructor.name, 'Object', 'should be an object');
-    t.end();
-});
-
-Tape('The feliz.package static member', t => {
-    t.deepEqual(Feliz.package, Package, 'should be the same object as package.json');
-    t.equal(!!Feliz.package, true, 'should be a non falsy value');
-    t.equal(Feliz.package.constructor.name, 'Object', 'should be an object');
-    t.end();
-});
+Test(cases, Feliz).subscribe();

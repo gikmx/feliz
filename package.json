@@ -45,8 +45,8 @@
     "istanbul": "^0.4.4",
     "jsdoc-to-markdown": "^1.3.6",
     "npm-watch": "git://github.com/hectormenendez/npm-watch.git",
-    "tap-spec": "^4.1.1",
-    "tape": "^4.6.0"
+    "feliz.test": "0.0.8",
+    "tap-spec": "^4.1.1"
   },
   "watch": {
     "test": {
