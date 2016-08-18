@@ -302,7 +302,8 @@ mandatory for each plugin function to return an observable of their instance.
 **See**: [plugins](#module_Configuration.plugins)  
 **Example**  
 ```js
-const plugin = function PluginName(info){ // since the value of `this` is necessary, avoid using ()=>
+// since the value of `this` is necessary, avoid using ()=>
+const plugin = function PluginName(info){
     console.log(`Hello, I'm a plugin an my name's ${info.name}`);
     return this.observable.of(this);
 }
