@@ -122,48 +122,37 @@ const tests = [
         }
     },
     {
-        desc: 'valid.conf with simple event declaration',
-        conf: {
-            root: path.empty,
-            events: {
-                on: [
-                    {name:'events', data: function(){}},
-                ]
-            }
-        },
-        pass: true,
-        call: function(tape, response) {
-            if (response instanceof Error) return;
-            const feliz = response;
-            const pass1 = feliz.util.is(feliz.events._events.events).function();
-            tape.equal(pass1, true, `should emit an event when ${this.desc}`);
-            tape.end();
-        }
-    },
-    {
         desc: 'valid conf.root with simple plugin',
         conf: {
             root: path.empty,
             plugins:[
                 function test(info){ return this.observable.of(this); }
             ],
-            events: {
-                on: [
-                    { name:'plugin:test', data: function(){} },
-                    { name:'plugin:test~before', data: function(){} }
-                ]
-            }
+            events: [
+                {
+                    name: 'core:events', // fires as soon as the events can fire.
+                    call: function(e){ this.__test = [e.name]; }
+                },
+                {
+                    name:'plugins:test',
+                    call: function(e){ this.__test.push(e.name); }
+                },
+                {
+                    name:'plugins:test~before',
+                    call: function(e){ this.__test.push(e.name); }
+                },
+                {
+                    name: 'core:plugins.set',
+                    call: function(e){ this.__test.push(e.name); }
+                }
+            ]
         },
         pass: true,
-        call: function(tape, response) {
-            if (response instanceof Error) return;
-            const pass1 = response.events._events['plugin:test'] !== undefined;
-            const pass2 = response.events._events['plugin:test~before'] !== undefined;
-            const pass3 = response.plugins[0] === 'test';
-            const msg1  = `should emit corresponding events when ${this.desc}`;
-            const msg2  = `should show the correct number of plugins when ${this.desc}`;
-            tape.equal(pass1 && pass2, true, msg1);
-            tape.equal(pass3, true, msg2);
+        call: function(tape, feliz) {
+            if (feliz instanceof Error) return;
+            const expect = feliz.events.filter((e,i,a) => a.indexOf(e) === i).sort();
+            const actual = feliz.__test.concat('core:conf.set').sort();
+            tape.deepEqual(expect, actual, `should register all events when ${this.desc}`);
             tape.end();
         }
     }

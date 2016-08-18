@@ -453,10 +453,39 @@ A list of plugins to setup on startup.
 
 <a name="module_Events"></a>
 
-## Events : <code>EventEmitter</code>
-An instance of Node's Events interface to hook into different parts of feliz's process.
+## Events
+Minimalistic internal event handler.
 
-**See**: [Node's Events interface](https://nodejs.org/api/events.html)  
+
+* [Events](#module_Events)
+    * [.on(name, call)](#module_Events.on) ⇒ <code>EventEmitter</code>
+    * [.emit(name)](#module_Events.emit) ⇒ <code>boolean</code>
+
+<a name="module_Events.on"></a>
+
+### Events.on(name, call) ⇒ <code>EventEmitter</code>
+Registers an event listener
+
+**Kind**: static method of <code>[Events](#module_Events)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | The name of the event to be registered. |
+| call | <code>function</code> | The function to be called when the target event emits. |
+
+<a name="module_Events.emit"></a>
+
+### Events.emit(name) ⇒ <code>boolean</code>
+Emits an event. Any listener with this name will trigger
+
+**Kind**: static method of <code>[Events](#module_Events)</code>  
+**Returns**: <code>boolean</code> - Wether the emition had listeneres or not.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | The name of the event to be emitted. |
+| ...values | <code>mixed</code> | Indefinite number of arguments to be sent to the listener. |
+
 
 ---
 
