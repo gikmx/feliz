@@ -151,7 +151,7 @@ const tests = [
         call: function(tape, feliz) {
             if (feliz instanceof Error) return;
             const expect = feliz.events.filter((e,i,a) => a.indexOf(e) === i).sort();
-            const actual = feliz.__test.concat('core:conf.set').sort();
+            const actual = feliz.__test.concat('core:conf.setter').sort();
             tape.deepEqual(expect, actual, `should register all events when ${this.desc}`);
             tape.end();
         }
