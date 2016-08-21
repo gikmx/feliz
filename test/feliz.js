@@ -140,18 +140,14 @@ const tests = [
                 {
                     name:'plugins:test~before',
                     call: function(e){ this.__test.push(e.name); }
-                },
-                {
-                    name: 'core:plugins.set',
-                    call: function(e){ this.__test.push(e.name); }
                 }
             ]
         },
         pass: true,
         call: function(tape, feliz) {
             if (feliz instanceof Error) return;
-            const expect = feliz.events.filter((e,i,a) => a.indexOf(e) === i).sort();
-            const actual = feliz.__test.concat('core:conf.setter').sort();
+            const actual = feliz.events.filter((e,i,a) => a.indexOf(e) === i).sort();
+            const expect = feliz.__test.concat('core:conf.setter').sort();
             tape.deepEqual(expect, actual, `should register all events when ${this.desc}`);
             tape.end();
         }
