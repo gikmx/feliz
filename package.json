@@ -23,14 +23,14 @@
     "node": ">=6.2.0"
   },
   "scripts": {
-    "start": "nodemon ./test/feliz.js -x 'npm run docs && npm run debug -s' -w ./lib -w ./test | tap-spec",
+    "start": "nodemon ./test -x 'npm run docs && npm run debug -s' -w ./lib -w ./test | tap-spec",
     "docs": "jsdoc2md -t ./template.hbs 'lib/**/*.js' > README.md",
-    "test": "tape ./test/feliz.js | tap-spec",
+    "test": "tape ./test | tap-spec",
     "debug": "node-debug --cli --no-debug-brk --debug-port 5901 --web-port 9901 --save-live-edit --no-preload",
-    "debug:watch": "nodemon ./test/feliz.js -x 'npm run debug -s' -w ./lib -w ./test | tap-spec",
+    "debug:watch": "nodemon ./test -x 'npm run debug -s' -w ./lib -w ./test | tap-spec",
     "cover": "npm run cover:stats && npm run cover:send",
     "cover:check": "npm run cover:stats && istanbul check-coverage",
-    "cover:stats": "istanbul cover tape -- ./test/feliz.js",
+    "cover:stats": "istanbul cover tape -- ./test",
     "cover:send": "cat ./coverage/lcov.info | coveralls",
     "precommit": "npm test && npm run cover:check && npm run docs && git add --force README.md && feliz.hooks pre-commit"
   },
